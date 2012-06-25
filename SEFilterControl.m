@@ -13,11 +13,11 @@
 
 #import "SEFilterControl.h"
 
-#define LEFT_OFFSET 25
-#define RIGHT_OFFSET 25
-#define TITLE_SELECTED_DISTANCE 5
-#define TITLE_FADE_ALPHA .5f
-#define TITLE_FONT [UIFont fontWithName:@"Optima" size:14]
+#define LEFT_OFFSET 25.0f
+#define RIGHT_OFFSET 25.0f
+#define TITLE_SELECTED_DISTANCE 5.0f
+#define TITLE_FADE_ALPHA 0.5f
+#define TITLE_FONT [UIFont fontWithName:@"Optima" size:14.0f]
 #define TITLE_SHADOW_COLOR [UIColor lightGrayColor]
 #define TITLE_COLOR [UIColor blackColor]
 
