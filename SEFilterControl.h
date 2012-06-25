@@ -20,8 +20,10 @@
 }
 -(id) initWithFrame:(CGRect) frame Titles:(NSArray *) titles;
 -(void) setSelectedIndex:(int)index;
--(void) setTitlesColor:(UIColor *)color;
--(void) setTitlesFont:(UIFont *)font;
+- (void)setTitlesColor:(UIColor *)theColor;
+- (void)setTitlesFont:(UIFont *)theFont;
+- (void)setTitlesShadowColor:(UIColor *)theColor;
+- (void)setTitlesShadowOffset:(CGSize)theOffset;
 -(void) setHandlerColor:(UIColor *)color;
 
 @property(nonatomic, retain) UIColor *progressColor;

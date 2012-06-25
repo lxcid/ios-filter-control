@@ -199,21 +199,31 @@
     [self sendActionsForControlEvents:UIControlEventTouchDown];
 }
 
--(void) setTitlesColor:(UIColor *)color{
-    int i;
-    UILabel *lbl;
-    for (i = 0; i < titlesArr.count; i++) {
-        lbl = (UILabel *)[self viewWithTag:i+50];
-        [lbl setTextColor:color];
+- (void)setTitlesColor:(UIColor *)theColor {
+    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
+        [theLabel setTextColor:theColor];
     }
 }
 
--(void) setTitlesFont:(UIFont *)font{
-    int i;
-    UILabel *lbl;
-    for (i = 0; i < titlesArr.count; i++) {
-        lbl = (UILabel *)[self viewWithTag:i+50];
-        [lbl setFont:font];
+- (void)setTitlesFont:(UIFont *)theFont {
+    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
+        [theLabel setFont:theFont];
+    }
+}
+
+- (void)setTitlesShadowColor:(UIColor *)theColor {
+    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
+        [theLabel setShadowColor:theColor];
+    }
+}
+
+- (void)setTitlesShadowOffset:(CGSize)theOffset {
+    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
+        [theLabel setShadowOffset:theOffset];
     }
 }
 
