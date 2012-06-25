@@ -33,17 +33,25 @@
 @implementation SEFilterControl
 @synthesize SelectedIndex, progressColor;
 
--(CGPoint)getCenterPointForIndex:(int) i{
-    return CGPointMake((i/(float)(titlesArr.count-1)) * (self.frame.size.width-RIGHT_OFFSET-LEFT_OFFSET) + LEFT_OFFSET, i==0?self.frame.size.height-55-TITLE_SELECTED_DISTANCE:self.frame.size.height-55);
+-(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
+    CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)(titlesArr.count - 1);
+    CGFloat theWidth = CGRectGetWidth(self.bounds) - LEFT_OFFSET - RIGHT_OFFSET;
+    
+    return CGPointMake(LEFT_OFFSET + (theNormalizedIndex * theWidth), (theIndex == 0) ? (CGRectGetHeight(self.bounds) - 55.0f - TITLE_SELECTED_DISTANCE) : CGRectGetHeight(self.bounds) - 55.0f);
 }
 
--(CGPoint)fixFinalPoint:(CGPoint)pnt{
-    if (pnt.x < LEFT_OFFSET-(handler.frame.size.width/2.f)) {
-        pnt.x = LEFT_OFFSET-(handler.frame.size.width/2.f);
-    }else if (pnt.x+(handler.frame.size.width/2.f) > self.frame.size.width-RIGHT_OFFSET){
-        pnt.x = self.frame.size.width-RIGHT_OFFSET- (handler.frame.size.width/2.f);
+-(CGPoint)fixFinalPoint:(CGPoint)thePoint {
+    CGFloat theMinHandleMinX = LEFT_OFFSET - (CGRectGetWidth(handler.frame) / 2.0f);
+    if (thePoint.x < theMinHandleMinX) {
+        thePoint.x = theMinHandleMinX;
+        return thePoint;
     }
-    return pnt;
+    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - RIGHT_OFFSET - (CGRectGetWidth(handler.frame) / 2.0f);
+    if (thePoint.x > theMaxHandleMinX) {
+        thePoint.x = theMaxHandleMinX;
+        return thePoint;
+    }
+    return thePoint;
 }
 
 -(id) initWithFrame:(CGRect) frame Titles:(NSArray *) titles{
