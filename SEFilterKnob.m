@@ -13,86 +13,92 @@
 
 #import "SEFilterKnob.h"
 
-@implementation SEFilterKnob
-@synthesize handlerColor;
+static NSString *const kHandlerColorPropertyName = @"handlerColor";
 
-- (id)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
+@implementation SEFilterKnob
+
+@synthesize handlerColor = _handlerColor;
+@synthesize drawingShadow = _drawingShadow;
+
+- (id)initWithFrame:(CGRect)theFrame {
+    self = [super initWithFrame:theFrame];
     if (self) {
         // Initialization code
-        [self setHandlerColor:[UIColor colorWithRed:230/255.f green:230/255.f blue:230/255.f alpha:1]];
+        [self addObserver:self forKeyPath:kHandlerColorPropertyName options:NSKeyValueObservingOptionNew context:NULL];
+        self.handlerColor = [UIColor colorWithRed:230.0f / 255.f green:230.0f / 255.f blue:230.0f / 255.f alpha:1.0f];
     }
     return self;
 }
 
--(void) setHandlerColor:(UIColor *)hc{
-    [handlerColor release];
-    handlerColor = nil;
-    
-    handlerColor = [hc retain];
-    [self setNeedsDisplay];
+- (void)dealloc {
+    [self removeObserver:self forKeyPath:kHandlerColorPropertyName context:NULL];
 }
 
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
-{
-    CGColorRef shadowColor = [UIColor colorWithRed:0 green:0 
-                                              blue:0 alpha:.4f].CGColor;
-    
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
+- (void)drawRect:(CGRect)theRect {
+    CGContextRef theContext = UIGraphicsGetCurrentContext();
     
     //Draw Main Cirlce
+    CGContextSaveGState(theContext);
     
-    CGContextSaveGState(context);
+    if (self.isDrawingShadow) {
+        UIColor *theShadowColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:.4f];
+        CGContextSetShadowWithColor(theContext, CGSizeMake(0.0f, 7.0f), 10.0f, theShadowColor.CGColor);
+    }
+    CGContextSetStrokeColorWithColor(theContext, self.handlerColor.CGColor);
+    CGContextSetLineWidth(theContext, 11.0f);
+    CGContextStrokeEllipseInRect(theContext, CGRectMake(6.5f, 6.0f, 22.0f, 22.0f));
     
-    CGContextSetShadowWithColor(context, CGSizeMake(0, 7), 10.f, shadowColor);
-    
-    CGContextSetStrokeColorWithColor(context, handlerColor.CGColor);
-    CGContextSetLineWidth(context, 11);
-    CGContextStrokeEllipseInRect(context, CGRectMake(6.5f, 6, 22, 22));
-    
-    CGContextRestoreGState(context);
+    CGContextRestoreGState(theContext);
     
     //Draw Outer Outline
+    CGContextSaveGState(theContext);
     
-    CGContextSaveGState(context);
+    CGContextSetStrokeColorWithColor(theContext, [UIColor colorWithWhite:0.5f alpha:0.6f].CGColor);
+    CGContextSetLineWidth(theContext, 1.0f);
+    CGContextStrokeEllipseInRect(theContext, CGRectMake(CGRectGetMinX(theRect) + 1.5f, CGRectGetMinY(theRect) + 1.2f, 32.0f, 32.0f));
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithWhite:.5 alpha:.6f].CGColor);
-    CGContextSetLineWidth(context, 1);
-    CGContextStrokeEllipseInRect(context, CGRectMake(rect.origin.x+1.5f, rect.origin.y+1.2f, 32, 32.f));
-    
-    CGContextRestoreGState(context);
+    CGContextRestoreGState(theContext);
     
     //Draw Inner Outline
+    CGContextSaveGState(theContext);
     
-    CGContextSaveGState(context);
+    CGContextSetStrokeColorWithColor(theContext, [UIColor colorWithWhite:0.5f alpha:0.6f].CGColor);
+    CGContextSetLineWidth(theContext, 1.0f);
+    CGContextStrokeEllipseInRect(theContext, CGRectMake(CGRectGetMinX(theRect) + 12.5f, CGRectGetMinY(theRect) + 12.0f, 10.0f, 10.0f));
     
-//    CGContextSetShadowWithColor(context, CGSizeMake(0, -4), 10.f, shadowColor);
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithWhite:.5 alpha:.6f].CGColor);
-    CGContextSetLineWidth(context, 1);
-    CGContextStrokeEllipseInRect(context, CGRectMake(rect.origin.x+12.5f, rect.origin.y+12, 10, 10));
+    CGContextRestoreGState(theContext);
     
-    CGContextRestoreGState(context);
+    // Draw Highlight/Gradient
+    CGContextSaveGState(theContext);
     
+    CGFloat theColors[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.6f };
+    CGColorSpaceRef theBaseSpace = CGColorSpaceCreateDeviceRGB();
+    CGGradientRef theGradient = CGGradientCreateWithColorComponents(theBaseSpace, theColors, NULL, 2);
+    CGContextAddEllipseInRect(theContext, CGRectMake(CGRectGetMinX(theRect) + 1.5f, CGRectGetMinY(theRect) + 1.0f, 32.0f, 32.0f));
+    CGContextClip(theContext);
+    CGContextDrawLinearGradient (theContext, theGradient, CGPointZero, CGPointMake(0.0f, CGRectGetHeight(theRect)), 0.0f);
     
-    CGFloat colors[8] = { 0,0, 0, 0,
-        0, 0, 0, .6};
-    CGColorSpaceRef baseSpace = CGColorSpaceCreateDeviceRGB();
-    CGGradientRef gradient = CGGradientCreateWithColorComponents(baseSpace, colors, NULL, 2);
-    
-    CGContextSaveGState(context);
-    CGContextAddEllipseInRect(context, CGRectMake(rect.origin.x+1.5f, rect.origin.y+1, 32, 32));
-    CGContextClip(context);
-    CGContextDrawLinearGradient (context, gradient, CGPointMake(0, 0), CGPointMake(0,rect.size.height), 0);
-    CGContextRestoreGState(context);
+    CGContextRestoreGState(theContext);
 }
 
--(void) dealloc{
-    [handlerColor release];
-    [super dealloc];
+#pragma mark - Key-Value Observing methods
+
+- (void)observeValueForKeyPath:(NSString *)theKeyPath ofObject:(id)theObject change:(NSDictionary *)theChange context:(void *)theContext {
+    if ([theKeyPath isEqualToString:kHandlerColorPropertyName]) {
+        NSKeyValueChange theKeyValueChange = ((NSNumber *)[theChange objectForKey:NSKeyValueChangeKindKey]).unsignedIntegerValue;
+        switch (theKeyValueChange) {
+            case NSKeyValueChangeSetting: {
+                [self setNeedsDisplay];
+            } break;
+            default: {
+                @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                               reason:@"Invalid execution path."
+                                             userInfo:nil];
+            } break;
+        }
+    }
 }
 
 @end
