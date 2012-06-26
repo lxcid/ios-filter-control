@@ -17,6 +17,7 @@
 
 extern NSString *const kTitlesTextKey;
 extern NSString *const kTitlesSelectedColorKey;
+extern NSString *const kTitlesSelectedFontKey;
 
 @interface SEFilterControl : UIControl
 
@@ -28,8 +29,6 @@ extern NSString *const kTitlesSelectedColorKey;
 - (void)setSelectedIndex:(int)theIndex;
 - (void)setTitlesColor:(UIColor *)theColor;
 - (void)setTitlesFont:(UIFont *)theFont;
-- (void)setTitlesShadowColor:(UIColor *)theColor;
-- (void)setTitlesShadowOffset:(CGSize)theOffset;
 - (void)setHandlerColor:(UIColor *)theColor;
 
 @end

@@ -17,12 +17,12 @@
 #define RIGHT_OFFSET 35.0f
 #define TITLE_SELECTED_DISTANCE 5.0f
 #define TITLE_FADE_ALPHA 0.5f
-#define TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0f]
-#define TITLE_SHADOW_COLOR [UIColor lightGrayColor]
-#define TITLE_COLOR [UIColor blackColor]
+#define TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Medium" size:12.0f]
+#define TITLE_COLOR [UIColor colorWithWhite:0.2f alpha:1.0f]
 
 NSString *const kTitlesTextKey = @"text";
 NSString *const kTitlesSelectedColorKey = @"selectedColor";
+NSString *const kTitlesSelectedFontKey = @"font";
 
 @interface SEFilterControl() {
     SEFilterKnob *handler;
@@ -91,7 +91,6 @@ NSString *const kTitlesSelectedColorKey = @"selectedColor";
             lbl = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, oneSlotSize, 25)];
             [lbl setText:title];
             [lbl setFont:TITLE_FONT];
-            [lbl setShadowColor:TITLE_SHADOW_COLOR];
             [lbl setTextColor:TITLE_COLOR];
             [lbl setLineBreakMode:UILineBreakModeMiddleTruncation];
             [lbl setAdjustsFontSizeToFitWidth:YES];
@@ -228,36 +227,24 @@ NSString *const kTitlesSelectedColorKey = @"selectedColor";
     }
 }
 
-- (void)setTitlesShadowColor:(UIColor *)theColor {
-    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
-        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
-        [theLabel setShadowColor:theColor];
-    }
-}
-
-- (void)setTitlesShadowOffset:(CGSize)theOffset {
-    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
-        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
-        [theLabel setShadowOffset:theOffset];
-    }
-}
-
 -(void) animateTitlesToIndex:(int) index{
     int i;
     UILabel *lbl;
-    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
     for (i = 0; i < [self countOfTitles]; i++) {
         lbl = (UILabel *)[self viewWithTag:i+50];
         [UIView beginAnimations:nil context:nil];
         [UIView setAnimationBeginsFromCurrentState:YES];
         if (i == index) {
+            NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
             [lbl setCenter:CGPointMake(lbl.center.x, self.frame.size.height-55-TITLE_SELECTED_DISTANCE)];
             [lbl setAlpha:1];
-            lbl.textColor = [theTitlesSelectedColor objectAtIndex:i];
+            lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
+            lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
         }else{
             [lbl setCenter:CGPointMake(lbl.center.x, self.frame.size.height-55)];
             [lbl setAlpha:TITLE_FADE_ALPHA];
             lbl.textColor = TITLE_COLOR;
+            lbl.font = TITLE_FONT;
         }
         [UIView commitAnimations];
     }
