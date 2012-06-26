@@ -13,11 +13,11 @@
 
 #import "SEFilterControl.h"
 
-#define LEFT_OFFSET 25.0f
-#define RIGHT_OFFSET 25.0f
+#define LEFT_OFFSET 35.0f
+#define RIGHT_OFFSET 35.0f
 #define TITLE_SELECTED_DISTANCE 5.0f
 #define TITLE_FADE_ALPHA 0.5f
-#define TITLE_FONT [UIFont fontWithName:@"Optima" size:14.0f]
+#define TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0f]
 #define TITLE_SHADOW_COLOR [UIColor lightGrayColor]
 #define TITLE_COLOR [UIColor blackColor]
 
@@ -54,8 +54,9 @@
     return thePoint;
 }
 
--(id) initWithFrame:(CGRect) frame Titles:(NSArray *) titles{
-    if (self = [super initWithFrame:CGRectMake(frame.origin.x, frame.origin.y, frame.size.width, 70)]) {
+- (id)initWithFrame:(CGRect)frame Titles:(NSArray *)titles {
+    self = [super initWithFrame:frame];
+    if (self) {
         [self setBackgroundColor:[UIColor clearColor]];
         titlesArr = [[NSArray alloc] initWithArray:titles];
         
