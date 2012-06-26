@@ -17,8 +17,9 @@
 
 @interface SEFilterControl : UIControl
 
-@property(nonatomic, retain) UIColor *progressColor;
-@property(nonatomic, readonly) NSInteger selectedIndex;
+@property (retain, nonatomic) UIColor *progressColor;
+@property (assign, nonatomic) NSInteger selectedIndex;
+@property (strong, nonatomic) NSArray *titles;
 
 - (id)initWithFrame:(CGRect)theFrame titles:(NSArray *)theTitles;
 - (void)setSelectedIndex:(int)theIndex;

@@ -24,7 +24,6 @@
 @interface SEFilterControl() {
     SEFilterKnob *handler;
     CGPoint diffPoint;
-    NSArray *titlesArr;
     float oneSlotSize;
 }
 
@@ -32,11 +31,12 @@
 
 @implementation SEFilterControl
 
+@synthesize titles = _titles;
 @synthesize selectedIndex = _selectedIndex;
 @synthesize progressColor = _progressColor;
 
 -(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
-    CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)(titlesArr.count - 1);
+    CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)([self countOfTitles] - 1);
     CGFloat theWidth = CGRectGetWidth(self.bounds) - LEFT_OFFSET - RIGHT_OFFSET;
     
     return CGPointMake(LEFT_OFFSET + (theNormalizedIndex * theWidth), (theIndex == 0) ? (CGRectGetHeight(self.bounds) - 55.0f - TITLE_SELECTED_DISTANCE) : CGRectGetHeight(self.bounds) - 55.0f);
@@ -60,7 +60,7 @@
     self = [super initWithFrame:theFrame];
     if (self) {
         self.backgroundColor = [UIColor clearColor];
-        titlesArr = [[NSArray alloc] initWithArray:theTitles];
+        self.titles = [[NSArray alloc] initWithArray:theTitles];
         
         [self setProgressColor:[UIColor colorWithRed:103/255.f green:173/255.f blue:202/255.f alpha:1]];
         
@@ -81,9 +81,9 @@
         NSString *title;
         UILabel *lbl;
         
-        oneSlotSize = 1.f*(self.frame.size.width-LEFT_OFFSET-RIGHT_OFFSET-1)/(titlesArr.count-1);
-        for (i = 0; i < titlesArr.count; i++) {
-            title = [titlesArr objectAtIndex:i];
+        oneSlotSize = 1.f*(self.frame.size.width-LEFT_OFFSET-RIGHT_OFFSET-1)/([self countOfTitles]-1);
+        for (i = 0; i < [self countOfTitles]; i++) {
+            title = [self.titles objectAtIndex:i];
             lbl = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, oneSlotSize, 25)];
             [lbl setText:title];
             [lbl setFont:TITLE_FONT];
@@ -157,7 +157,7 @@
     
     CGPoint centerPoint;
     int i;
-    for (i = 0; i < titlesArr.count; i++) {
+    for (i = 0; i < [self countOfTitles]; i++) {
         centerPoint = [self getCenterPointForIndex:i];
         
         //Draw Selection Circles
@@ -193,7 +193,7 @@
         CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0 green:0
                                                                    blue:0 alpha:.2f].CGColor);
         
-        CGContextAddArc(context,centerPoint.x-2.5,rect.size.height-30.5f,12.f,(i==titlesArr.count-1?28:-20)*M_PI/180,(i==0?-208:-160)*M_PI/180,1);
+        CGContextAddArc(context,centerPoint.x-2.5,rect.size.height-30.5f,12.f,(i==[self countOfTitles]-1?28:-20)*M_PI/180,(i==0?-208:-160)*M_PI/180,1);
         CGContextSetLineWidth(context, 1.f);
         CGContextDrawPath(context,kCGPathStroke);
         
@@ -211,28 +211,28 @@
 }
 
 - (void)setTitlesColor:(UIColor *)theColor {
-    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
         UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
         [theLabel setTextColor:theColor];
     }
 }
 
 - (void)setTitlesFont:(UIFont *)theFont {
-    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
         UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
         [theLabel setFont:theFont];
     }
 }
 
 - (void)setTitlesShadowColor:(UIColor *)theColor {
-    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
         UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
         [theLabel setShadowColor:theColor];
     }
 }
 
 - (void)setTitlesShadowOffset:(CGSize)theOffset {
-    for (NSInteger theIndex = 0; theIndex < titlesArr.count; theIndex++) {
+    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
         UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
         [theLabel setShadowOffset:theOffset];
     }
@@ -241,7 +241,7 @@
 -(void) animateTitlesToIndex:(int) index{
     int i;
     UILabel *lbl;
-    for (i = 0; i < titlesArr.count; i++) {
+    for (i = 0; i < [self countOfTitles]; i++) {
         lbl = (UILabel *)[self viewWithTag:i+50];
         [UIView beginAnimations:nil context:nil];
         [UIView setAnimationBeginsFromCurrentState:YES];
@@ -313,10 +313,28 @@
     [handler removeTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
     [handler removeTarget:self action:@selector(TouchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
     [handler release];
-    [titlesArr release];
+    self.titles = nil;
     self.progressColor = nil;
     
     [super dealloc];
+}
+
+#pragma mark - titles Key-Value Coding methods
+
+- (NSUInteger)countOfTitles {
+    return self.titles.count;
+}
+
+- (NSDictionary *)objectInTitlesAtIndex:(NSUInteger)theIndex {
+    return [self.titles objectAtIndex:theIndex];
+}
+
+- (NSArray *)titlesAtIndexes:(NSIndexSet *)theIndexes {
+    return [self.titles objectsAtIndexes:theIndexes];
+}
+
+- (void)getTitles:(NSDictionary * __unsafe_unretained *)theBuffer range:(NSRange)inRange {
+    [self.titles getObjects:theBuffer range:inRange];
 }
 
 @end
