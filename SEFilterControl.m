@@ -67,7 +67,7 @@
         [gest release];
         
         handler = [[SEFilterKnob buttonWithType:UIButtonTypeCustom] retain];
-        [handler setFrame:CGRectMake(LEFT_OFFSET, 10, 35, 55)];
+        [handler setFrame:CGRectMake(LEFT_OFFSET, 10.0f, 27.0f, 27.0f)];
         [handler setAdjustsImageWhenHighlighted:NO];
         [handler setCenter:CGPointMake(handler.center.x-(handler.frame.size.width/2.f), self.frame.size.height-19.5f)];
         [handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];

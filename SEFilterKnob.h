@@ -16,6 +16,5 @@
 @interface SEFilterKnob : UIButton
 
 @property (strong, nonatomic) UIColor *handlerColor;
-@property (assign, nonatomic, getter = isDrawingShadow) BOOL drawingShadow;
 
 @end

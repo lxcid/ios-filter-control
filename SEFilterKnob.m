@@ -12,20 +12,46 @@
 //    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #import "SEFilterKnob.h"
+#import <QuartzCore/QuartzCore.h>
 
 static NSString *const kHandlerColorPropertyName = @"handlerColor";
+
+@interface SEFilterKnob ()
+
+@property (strong, nonatomic) CAShapeLayer *knobSublayer;
+
+@end
 
 @implementation SEFilterKnob
 
 @synthesize handlerColor = _handlerColor;
-@synthesize drawingShadow = _drawingShadow;
+@synthesize knobSublayer = _knobSublayer;
+
+- (CAShapeLayer *)knobSublayer {
+    if (_knobSublayer == nil) {
+        UIBezierPath *theBezierPath = [UIBezierPath bezierPathWithOvalInRect:CGRectOffset(CGRectInset(self.bounds, 2.0f, 2.0f), 0.0f, -1.0f)];
+        _knobSublayer = [CAShapeLayer layer];
+        _knobSublayer.path = theBezierPath.CGPath;
+        _knobSublayer.fillColor = [UIColor blackColor].CGColor;
+        _knobSublayer.strokeColor = [UIColor whiteColor].CGColor;
+        _knobSublayer.lineWidth = 2.0f;
+        _knobSublayer.fillRule = kCAFillRuleNonZero;
+        _knobSublayer.shadowPath = theBezierPath.CGPath;
+        _knobSublayer.shadowOpacity = 1.0f;
+        _knobSublayer.shadowColor = [UIColor blackColor].CGColor;
+        _knobSublayer.shadowOffset = CGSizeMake(0.0f, 0.5f);
+        _knobSublayer.shadowRadius = 1.5f;
+        [self.layer addSublayer:_knobSublayer];
+    }
+    return _knobSublayer;
+}
 
 - (id)initWithFrame:(CGRect)theFrame {
     self = [super initWithFrame:theFrame];
     if (self) {
         // Initialization code
         [self addObserver:self forKeyPath:kHandlerColorPropertyName options:NSKeyValueObservingOptionNew context:NULL];
-        self.handlerColor = [UIColor colorWithRed:230.0f / 255.f green:230.0f / 255.f blue:230.0f / 255.f alpha:1.0f];
+        self.handlerColor = [UIColor orangeColor];
     }
     return self;
 }
@@ -34,53 +60,13 @@ static NSString *const kHandlerColorPropertyName = @"handlerColor";
     [self removeObserver:self forKeyPath:kHandlerColorPropertyName context:NULL];
 }
 
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)theRect {
-    CGContextRef theContext = UIGraphicsGetCurrentContext();
+- (void)layoutSubviews {
+    [super layoutSubviews];
     
-    //Draw Main Cirlce
-    CGContextSaveGState(theContext);
-    
-    if (self.isDrawingShadow) {
-        UIColor *theShadowColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:.4f];
-        CGContextSetShadowWithColor(theContext, CGSizeMake(0.0f, 7.0f), 10.0f, theShadowColor.CGColor);
-    }
-    CGContextSetStrokeColorWithColor(theContext, self.handlerColor.CGColor);
-    CGContextSetLineWidth(theContext, 11.0f);
-    CGContextStrokeEllipseInRect(theContext, CGRectMake(6.5f, 6.0f, 22.0f, 22.0f));
-    
-    CGContextRestoreGState(theContext);
-    
-    //Draw Outer Outline
-    CGContextSaveGState(theContext);
-    
-    CGContextSetStrokeColorWithColor(theContext, [UIColor colorWithWhite:0.5f alpha:0.6f].CGColor);
-    CGContextSetLineWidth(theContext, 1.0f);
-    CGContextStrokeEllipseInRect(theContext, CGRectMake(CGRectGetMinX(theRect) + 1.5f, CGRectGetMinY(theRect) + 1.2f, 32.0f, 32.0f));
-    
-    CGContextRestoreGState(theContext);
-    
-    //Draw Inner Outline
-    CGContextSaveGState(theContext);
-    
-    CGContextSetStrokeColorWithColor(theContext, [UIColor colorWithWhite:0.5f alpha:0.6f].CGColor);
-    CGContextSetLineWidth(theContext, 1.0f);
-    CGContextStrokeEllipseInRect(theContext, CGRectMake(CGRectGetMinX(theRect) + 12.5f, CGRectGetMinY(theRect) + 12.0f, 10.0f, 10.0f));
-    
-    CGContextRestoreGState(theContext);
-    
-    // Draw Highlight/Gradient
-    CGContextSaveGState(theContext);
-    
-    CGFloat theColors[] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.6f };
-    CGColorSpaceRef theBaseSpace = CGColorSpaceCreateDeviceRGB();
-    CGGradientRef theGradient = CGGradientCreateWithColorComponents(theBaseSpace, theColors, NULL, 2);
-    CGContextAddEllipseInRect(theContext, CGRectMake(CGRectGetMinX(theRect) + 1.5f, CGRectGetMinY(theRect) + 1.0f, 32.0f, 32.0f));
-    CGContextClip(theContext);
-    CGContextDrawLinearGradient (theContext, theGradient, CGPointZero, CGPointMake(0.0f, CGRectGetHeight(theRect)), 0.0f);
-    
-    CGContextRestoreGState(theContext);
+    UIBezierPath *theBezierPath = [UIBezierPath bezierPathWithOvalInRect:CGRectOffset(CGRectInset(self.bounds, 2.0f, 2.0f), 0.0f, -1.0f)];
+    self.knobSublayer.path = theBezierPath.CGPath;
+    self.knobSublayer.shadowPath = theBezierPath.CGPath;
+    self.knobSublayer.fillColor = self.handlerColor.CGColor;
 }
 
 #pragma mark - Key-Value Observing methods
@@ -90,7 +76,7 @@ static NSString *const kHandlerColorPropertyName = @"handlerColor";
         NSKeyValueChange theKeyValueChange = ((NSNumber *)[theChange objectForKey:NSKeyValueChangeKindKey]).unsignedIntegerValue;
         switch (theKeyValueChange) {
             case NSKeyValueChangeSetting: {
-                [self setNeedsDisplay];
+                [self setNeedsLayout];
             } break;
             default: {
                 @throw [NSException exceptionWithName:NSInternalInconsistencyException
