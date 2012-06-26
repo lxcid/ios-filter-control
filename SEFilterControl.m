@@ -245,6 +245,7 @@ NSString *const kTitlesSelectedColorKey = @"selectedColor";
 -(void) animateTitlesToIndex:(int) index{
     int i;
     UILabel *lbl;
+    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
     for (i = 0; i < [self countOfTitles]; i++) {
         lbl = (UILabel *)[self viewWithTag:i+50];
         [UIView beginAnimations:nil context:nil];
@@ -252,9 +253,11 @@ NSString *const kTitlesSelectedColorKey = @"selectedColor";
         if (i == index) {
             [lbl setCenter:CGPointMake(lbl.center.x, self.frame.size.height-55-TITLE_SELECTED_DISTANCE)];
             [lbl setAlpha:1];
+            lbl.textColor = [theTitlesSelectedColor objectAtIndex:i];
         }else{
             [lbl setCenter:CGPointMake(lbl.center.x, self.frame.size.height-55)];
             [lbl setAlpha:TITLE_FADE_ALPHA];
+            lbl.textColor = TITLE_COLOR;
         }
         [UIView commitAnimations];
     }
@@ -264,9 +267,10 @@ NSString *const kTitlesSelectedColorKey = @"selectedColor";
     CGPoint toPoint = [self getCenterPointForIndex:index];
     toPoint = CGPointMake(toPoint.x-(handler.frame.size.width/2.f), handler.frame.origin.y);
     toPoint = [self fixFinalPoint:toPoint];
-    
+    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
     [UIView beginAnimations:nil context:nil];
     [handler setFrame:CGRectMake(toPoint.x, toPoint.y, handler.frame.size.width, handler.frame.size.height)];
+    handler.handlerColor = [theTitlesSelectedColor objectAtIndex:index];
     [UIView commitAnimations];
 }
 
