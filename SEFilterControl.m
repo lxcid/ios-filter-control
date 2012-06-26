@@ -12,6 +12,7 @@
 //    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #import "SEFilterControl.h"
+#import "SEFilterKnob.h"
 
 #define LEFT_OFFSET 35.0f
 #define RIGHT_OFFSET 35.0f
@@ -25,7 +26,6 @@ NSString *const kTitlesSelectedColorKey = @"selectedColor";
 NSString *const kTitlesSelectedFontKey = @"font";
 
 @interface SEFilterControl() {
-    SEFilterKnob *handler;
     CGPoint diffPoint;
     float oneSlotSize;
 }
@@ -37,6 +37,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
 @synthesize titles = _titles;
 @synthesize selectedIndex = _selectedIndex;
 @synthesize progressColor = _progressColor;
+@synthesize handler = _handler;
 
 -(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
     CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)([self countOfTitles] - 1);
@@ -46,12 +47,12 @@ NSString *const kTitlesSelectedFontKey = @"font";
 }
 
 -(CGPoint)fixFinalPoint:(CGPoint)thePoint {
-    CGFloat theMinHandleMinX = LEFT_OFFSET - (CGRectGetWidth(handler.frame) / 2.0f);
+    CGFloat theMinHandleMinX = LEFT_OFFSET - (CGRectGetWidth(self.handler.frame) / 2.0f);
     if (thePoint.x < theMinHandleMinX) {
         thePoint.x = theMinHandleMinX;
         return thePoint;
     }
-    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - RIGHT_OFFSET - (CGRectGetWidth(handler.frame) / 2.0f);
+    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - RIGHT_OFFSET - (CGRectGetWidth(self.handler.frame) / 2.0f);
     if (thePoint.x > theMaxHandleMinX) {
         thePoint.x = theMaxHandleMinX;
         return thePoint;
@@ -71,14 +72,14 @@ NSString *const kTitlesSelectedFontKey = @"font";
         [self addGestureRecognizer:gest];
         [gest release];
         
-        handler = [[SEFilterKnob buttonWithType:UIButtonTypeCustom] retain];
-        [handler setFrame:CGRectMake(LEFT_OFFSET, 10.0f, 27.0f, 27.0f)];
-        [handler setAdjustsImageWhenHighlighted:NO];
-        [handler setCenter:CGPointMake(handler.center.x-(handler.frame.size.width/2.f), self.frame.size.height-19.5f)];
-        [handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-        [handler addTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
-        [handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
-        [self addSubview:handler];
+        self.handler = [[SEFilterKnob buttonWithType:UIButtonTypeCustom] retain];
+        [self.handler setFrame:CGRectMake(LEFT_OFFSET, 10.0f, 27.0f, 27.0f)];
+        [self.handler setAdjustsImageWhenHighlighted:NO];
+        [self.handler setCenter:CGPointMake(self.handler.center.x-(self.handler.frame.size.width/2.f), self.frame.size.height-19.5f)];
+        [self.handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
+        [self.handler addTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
+        [self.handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
+        [self addSubview:self.handler];
         
         int i;
         NSString *title;
@@ -203,8 +204,8 @@ NSString *const kTitlesSelectedFontKey = @"font";
     }
 }
 
--(void) setHandlerColor:(UIColor *)color{
-    [handler setHandlerColor:color];
+- (void)setHandlerColor:(UIColor *)theColor {
+    self.handler.handlerColor = theColor;
 }
 
 - (void) TouchDown: (UIButton *) btn withEvent: (UIEvent *) ev{
@@ -252,12 +253,12 @@ NSString *const kTitlesSelectedFontKey = @"font";
 
 -(void) animateHandlerToIndex:(int) index{
     CGPoint toPoint = [self getCenterPointForIndex:index];
-    toPoint = CGPointMake(toPoint.x-(handler.frame.size.width/2.f), handler.frame.origin.y);
+    toPoint = CGPointMake(toPoint.x-(self.handler.frame.size.width/2.f), self.handler.frame.origin.y);
     toPoint = [self fixFinalPoint:toPoint];
     NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
     [UIView beginAnimations:nil context:nil];
-    [handler setFrame:CGRectMake(toPoint.x, toPoint.y, handler.frame.size.width, handler.frame.size.height)];
-    handler.handlerColor = [theTitlesSelectedColor objectAtIndex:index];
+    [self.handler setFrame:CGRectMake(toPoint.x, toPoint.y, self.handler.frame.size.width, self.handler.frame.size.height)];
+    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:index];
     [UIView commitAnimations];
 }
 
@@ -290,11 +291,11 @@ NSString *const kTitlesSelectedFontKey = @"font";
 - (void) TouchMove: (UIButton *) btn withEvent: (UIEvent *) ev {
     CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
     
-    CGPoint toPoint = CGPointMake(currPoint.x-diffPoint.x, handler.frame.origin.y);
+    CGPoint toPoint = CGPointMake(currPoint.x-diffPoint.x, self.handler.frame.origin.y);
     
     toPoint = [self fixFinalPoint:toPoint];
     
-    [handler setFrame:CGRectMake(toPoint.x, toPoint.y, handler.frame.size.width, handler.frame.size.height)];
+    [self.handler setFrame:CGRectMake(toPoint.x, toPoint.y, self.handler.frame.size.width, self.handler.frame.size.height)];
     
     int selected = [self getSelectedTitleInPoint:btn.center];
     
@@ -304,10 +305,10 @@ NSString *const kTitlesSelectedFontKey = @"font";
 }
 
 -(void)dealloc{
-    [handler removeTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-    [handler removeTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
-    [handler removeTarget:self action:@selector(TouchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
-    [handler release];
+    [self.handler removeTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
+    [self.handler removeTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
+    [self.handler removeTarget:self action:@selector(TouchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
+    self.handler = nil;
     self.titles = nil;
     self.progressColor = nil;
     

@@ -13,7 +13,8 @@
 
 
 #import <UIKit/UIKit.h>
-#import "SEFilterKnob.h"
+
+@class SEFilterKnob;
 
 extern NSString *const kTitlesTextKey;
 extern NSString *const kTitlesSelectedColorKey;
@@ -24,6 +25,7 @@ extern NSString *const kTitlesSelectedFontKey;
 @property (retain, nonatomic) UIColor *progressColor;
 @property (assign, nonatomic) NSInteger selectedIndex;
 @property (strong, nonatomic) NSArray *titles;
+@property (strong, nonatomic) SEFilterKnob *handler;
 
 - (id)initWithFrame:(CGRect)theFrame titles:(NSArray *)theTitles;
 - (void)setSelectedIndex:(int)theIndex;
