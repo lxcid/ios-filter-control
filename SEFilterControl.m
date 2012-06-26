@@ -21,7 +21,7 @@
 #define TITLE_SHADOW_COLOR [UIColor lightGrayColor]
 #define TITLE_COLOR [UIColor blackColor]
 
-@interface SEFilterControl (){
+@interface SEFilterControl() {
     SEFilterKnob *handler;
     CGPoint diffPoint;
     NSArray *titlesArr;
@@ -31,7 +31,9 @@
 @end
 
 @implementation SEFilterControl
-@synthesize SelectedIndex, progressColor;
+
+@synthesize selectedIndex = _selectedIndex;
+@synthesize progressColor = _progressColor;
 
 -(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
     CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)(titlesArr.count - 1);
@@ -54,15 +56,15 @@
     return thePoint;
 }
 
-- (id)initWithFrame:(CGRect)frame Titles:(NSArray *)titles {
-    self = [super initWithFrame:frame];
+- (id)initWithFrame:(CGRect)theFrame titles:(NSArray *)theTitles {
+    self = [super initWithFrame:theFrame];
     if (self) {
-        [self setBackgroundColor:[UIColor clearColor]];
-        titlesArr = [[NSArray alloc] initWithArray:titles];
+        self.backgroundColor = [UIColor clearColor];
+        titlesArr = [[NSArray alloc] initWithArray:theTitles];
         
         [self setProgressColor:[UIColor colorWithRed:103/255.f green:173/255.f blue:202/255.f alpha:1]];
         
-        UITapGestureRecognizer *gest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(ItemSelected:)];
+        UITapGestureRecognizer *gest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(itemSelected:)];
         [self addGestureRecognizer:gest];
         [gest release];
         
@@ -264,29 +266,28 @@
     [UIView commitAnimations];
 }
 
--(void) setSelectedIndex:(int)index{
-    SelectedIndex = index;
-    [self animateTitlesToIndex:index];
-    [self animateHandlerToIndex:index];
+- (void)setSelectedIndex:(int)theIndex {
+    _selectedIndex = theIndex;
+    [self animateTitlesToIndex:theIndex];
+    [self animateHandlerToIndex:theIndex];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
--(int)getSelectedTitleInPoint:(CGPoint)pnt{
+- (int)getSelectedTitleInPoint:(CGPoint)pnt {
     return round((pnt.x-LEFT_OFFSET)/oneSlotSize);
 }
 
--(void) ItemSelected: (UITapGestureRecognizer *) tap {
-    SelectedIndex = [self getSelectedTitleInPoint:[tap locationInView:self]];
-    [self setSelectedIndex:SelectedIndex];
+- (void)itemSelected:(UITapGestureRecognizer *)theTapGestureRecognizer {
+    _selectedIndex = [self getSelectedTitleInPoint:[theTapGestureRecognizer locationInView:self]];
+    [self setSelectedIndex:_selectedIndex];
     
     [self sendActionsForControlEvents:UIControlEventTouchUpInside];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
--(void) TouchUp: (UIButton*) btn{
-    
-    SelectedIndex = [self getSelectedTitleInPoint:btn.center];
-    [self animateHandlerToIndex:SelectedIndex];
+- (void)TouchUp:(UIButton *)btn {
+    _selectedIndex = [self getSelectedTitleInPoint:btn.center];
+    [self animateHandlerToIndex:_selectedIndex];
     [self sendActionsForControlEvents:UIControlEventTouchUpInside];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
@@ -313,7 +314,8 @@
     [handler removeTarget:self action:@selector(TouchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
     [handler release];
     [titlesArr release];
-    [progressColor release];
+    self.progressColor = nil;
+    
     [super dealloc];
 }
 
