@@ -80,32 +80,32 @@ NSString *const kTitlesSelectedFontKey = @"font";
         [self.handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
         [self addSubview:self.handler];
         
-        int i;
-        NSString *title;
-        UILabel *lbl;
-        
         oneSlotSize = 1.f*(self.frame.size.width-LEFT_OFFSET-RIGHT_OFFSET-1)/([self countOfTitles]-1);
-        NSArray *theTitlesText = [self valueForKeyPath:@"titles.@unionOfObjects.text"];
-        for (i = 0; i < [self countOfTitles]; i++) {
-            title = [theTitlesText objectAtIndex:i];
-            lbl = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, oneSlotSize, 25)];
-            [lbl setText:title];
-            [lbl setFont:TITLE_FONT];
-            [lbl setTextColor:TITLE_COLOR];
-            [lbl setLineBreakMode:UILineBreakModeMiddleTruncation];
-            [lbl setAdjustsFontSizeToFitWidth:YES];
-            [lbl setMinimumFontSize:8];
-            [lbl setTextAlignment:UITextAlignmentCenter];
-            [lbl setShadowOffset:CGSizeMake(0, 1)];
-            [lbl setBackgroundColor:[UIColor clearColor]];
-            [lbl setTag:i+50];
+        for (int i = 0; i < [self countOfTitles]; i++) {
+            NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
+            UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, oneSlotSize, 25.0f)];
+            lbl.text = [theDictionary objectForKey:kTitlesTextKey];
+            lbl.lineBreakMode = UILineBreakModeMiddleTruncation;
+            lbl.textAlignment = UITextAlignmentCenter;
+            lbl.backgroundColor = [UIColor clearColor];
+            lbl.tag = i + 50;
             
-            if (i) {
-                [lbl setAlpha:TITLE_FADE_ALPHA];
+            if (self.selectedIndex == i) {
+                CGPoint theCenterPoint = [self getCenterPointForIndex:i];
+                theCenterPoint.y -= 20.0f;
+                theCenterPoint.y -= TITLE_SELECTED_DISTANCE;
+                lbl.center = theCenterPoint;
+                lbl.alpha = 1.0f;
+                lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
+                lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
+            } else {
+                CGPoint theCenterPoint = [self getCenterPointForIndex:i];
+                theCenterPoint.y -= 20.0f;
+                lbl.center = theCenterPoint;
+                lbl.alpha = TITLE_FADE_ALPHA;
+                lbl.textColor = TITLE_COLOR;
+                lbl.font = TITLE_FONT;
             }
-            
-            [lbl setCenter:[self getCenterPointForIndex:i]];
-            
             
             [self addSubview:lbl];
             [lbl release];
@@ -214,20 +214,6 @@ NSString *const kTitlesSelectedFontKey = @"font";
     [self sendActionsForControlEvents:UIControlEventTouchDown];
 }
 
-- (void)setTitlesColor:(UIColor *)theColor {
-    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
-        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
-        [theLabel setTextColor:theColor];
-    }
-}
-
-- (void)setTitlesFont:(UIFont *)theFont {
-    for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
-        UILabel *theLabel = (UILabel *)[self viewWithTag:theIndex + 50];
-        [theLabel setFont:theFont];
-    }
-}
-
 -(void) animateTitlesToIndex:(int) index{
     int i;
     UILabel *lbl;
@@ -237,12 +223,17 @@ NSString *const kTitlesSelectedFontKey = @"font";
         [UIView setAnimationBeginsFromCurrentState:YES];
         if (i == index) {
             NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
-            [lbl setCenter:CGPointMake(lbl.center.x, self.frame.size.height-55-TITLE_SELECTED_DISTANCE)];
+            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
+            theCenterPoint.y -= 20.0f;
+            theCenterPoint.y -= TITLE_SELECTED_DISTANCE;
+            lbl.center = theCenterPoint;
             [lbl setAlpha:1];
             lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
             lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
         }else{
-            [lbl setCenter:CGPointMake(lbl.center.x, self.frame.size.height-55)];
+            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
+            theCenterPoint.y -= 20.0f;
+            lbl.center = theCenterPoint;
             [lbl setAlpha:TITLE_FADE_ALPHA];
             lbl.textColor = TITLE_COLOR;
             lbl.font = TITLE_FONT;

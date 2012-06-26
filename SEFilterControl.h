@@ -28,9 +28,6 @@ extern NSString *const kTitlesSelectedFontKey;
 @property (strong, nonatomic) SEFilterKnob *handler;
 
 - (id)initWithFrame:(CGRect)theFrame titles:(NSArray *)theTitles;
-- (void)setSelectedIndex:(int)theIndex;
-- (void)setTitlesColor:(UIColor *)theColor;
-- (void)setTitlesFont:(UIFont *)theFont;
 - (void)setHandlerColor:(UIColor *)theColor;
 
 @end
