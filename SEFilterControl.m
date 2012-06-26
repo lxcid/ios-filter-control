@@ -21,6 +21,9 @@
 #define TITLE_SHADOW_COLOR [UIColor lightGrayColor]
 #define TITLE_COLOR [UIColor blackColor]
 
+NSString *const kTitlesTextKey = @"text";
+NSString *const kTitlesSelectedColorKey = @"selectedColor";
+
 @interface SEFilterControl() {
     SEFilterKnob *handler;
     CGPoint diffPoint;
@@ -82,8 +85,9 @@
         UILabel *lbl;
         
         oneSlotSize = 1.f*(self.frame.size.width-LEFT_OFFSET-RIGHT_OFFSET-1)/([self countOfTitles]-1);
+        NSArray *theTitlesText = [self valueForKeyPath:@"titles.@unionOfObjects.text"];
         for (i = 0; i < [self countOfTitles]; i++) {
-            title = [self.titles objectAtIndex:i];
+            title = [theTitlesText objectAtIndex:i];
             lbl = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, oneSlotSize, 25)];
             [lbl setText:title];
             [lbl setFont:TITLE_FONT];

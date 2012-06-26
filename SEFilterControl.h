@@ -15,6 +15,9 @@
 #import <UIKit/UIKit.h>
 #import "SEFilterKnob.h"
 
+extern NSString *const kTitlesTextKey;
+extern NSString *const kTitlesSelectedColorKey;
+
 @interface SEFilterControl : UIControl
 
 @property (retain, nonatomic) UIColor *progressColor;
