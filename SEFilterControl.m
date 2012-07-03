@@ -130,6 +130,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
     CGContextRestoreGState(context);
     
     
+    /*
     //Draw Black Top Shadow
     CGContextSaveGState(context);
     
@@ -146,6 +147,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
     CGContextStrokePath(context);
     
     CGContextRestoreGState(context);
+    */
     
     //Draw White Bottom Shadow
     CGContextSaveGState(context);
@@ -192,6 +194,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
         CGContextAddArc(context, centerPoint.x, centerPoint.y, (theSelectionCirclesLength / 2.0f), 24.0f * M_PI / 180.0f, 156.0f * M_PI/180.0f, 0);
         CGContextDrawPath(context,kCGPathStroke);
         
+        /*
         //Draw Black Top Shadow
         
         CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0 green:0
@@ -200,7 +203,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
         CGContextAddArc(context, centerPoint.x, centerPoint.y, (theSelectionCirclesLength / 2.0f), (i == ([self countOfTitles] - 1) ? 28.0f : -20.0f) * M_PI / 180.0f, ( (i == 0) ? -208.0f : -160.0f) * M_PI / 180.0f, 1);
         CGContextSetLineWidth(context, 1.f);
         CGContextDrawPath(context,kCGPathStroke);
-        
+        */
     }
 }
 
