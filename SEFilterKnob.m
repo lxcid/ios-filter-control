@@ -46,6 +46,7 @@ static NSString *const kHandlerBackgroundImagePropertyName = @"handlerBackground
         [self addObserver:self forKeyPath:kHandlerColorPropertyName options:NSKeyValueObservingOptionNew context:NULL];
         [self addObserver:self forKeyPath:kKnobSublayerPropertyName options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:NULL];
         [self addObserver:self forKeyPath:kHandlerBackgroundImagePropertyName options:NSKeyValueObservingOptionNew context:NULL];
+        self.length = 28.0f;
     }
     return self;
 }
