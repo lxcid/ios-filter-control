@@ -286,7 +286,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
         self.titles = [[NSArray alloc] initWithArray:theTitles];
         self.backgroundColor = [UIColor clearColor];
         self.progressColor = [UIColor colorWithWhite:0.824f alpha:1.0f];
-        self.tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
+        self.tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
         [self addGestureRecognizer:self.tapGestureRecognizer];
         
         self.oneSlotSize = (CGRectGetWidth(self.bounds) - self.padding.left - self.padding.right) / ([self countOfTitles] - 1);
