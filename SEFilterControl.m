@@ -137,6 +137,18 @@ NSString *const kTitlesSelectedFontKey = @"font";
     return _backgroundView;
 }
 
+- (SEFilterKnob *)handler {
+    if (_handler == nil) {
+        _handler = [SEFilterKnob buttonWithType:UIButtonTypeCustom];
+        _handler.adjustsImageWhenHighlighted = NO;
+        [_handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
+        [_handler addTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
+        [_handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
+        [self addSubview:_handler];
+    }
+    return _handler;
+}
+
 -(CGPoint)fixFinalPoint:(CGPoint)thePoint {
     CGFloat theMinHandleMinX = self.padding.left - (CGRectGetWidth(self.handler.frame) / 2.0f);
     if (thePoint.x < theMinHandleMinX) {
@@ -160,15 +172,6 @@ NSString *const kTitlesSelectedFontKey = @"font";
         self.progressColor = [UIColor colorWithWhite:0.824f alpha:1.0f];
         self.tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
         [self addGestureRecognizer:self.tapGestureRecognizer];
-        
-        CGFloat theHandleLength = 28.0f;
-        self.handler = [SEFilterKnob buttonWithType:UIButtonTypeCustom];
-        [self.handler setFrame:CGRectMake(self.padding.left - (theHandleLength / 2.0f), CGRectGetHeight(self.bounds) - theHandleLength - 10.0f, theHandleLength, theHandleLength)];
-        [self.handler setAdjustsImageWhenHighlighted:NO];
-        [self.handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-        [self.handler addTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
-        [self.handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
-        [self addSubview:self.handler];
         
         self.progressBarCenterY = CGRectGetHeight(self.bounds) - 25.0f;
         self.progressBarHeight = 3.0f;
@@ -212,6 +215,8 @@ NSString *const kTitlesSelectedFontKey = @"font";
     [super layoutSubviews];
     
     self.backgroundView.frame = self.bounds;
+    
+    [self layoutHandlerAtIndex:self.selectedIndex];
 }
 
 - (void)setHandlerColor:(UIColor *)theColor {
@@ -252,15 +257,22 @@ NSString *const kTitlesSelectedFontKey = @"font";
     }
 }
 
--(void) animateHandlerToIndex:(int) index{
-    CGPoint toPoint = [self getCenterPointForIndex:index];
-    toPoint = CGPointMake(toPoint.x-(self.handler.frame.size.width/2.f), self.handler.frame.origin.y);
-    toPoint = [self fixFinalPoint:toPoint];
+- (void)layoutHandlerAtIndex:(NSInteger)theIndex {
+    CGPoint thePoint = [self getCenterPointForIndex:theIndex];
+    thePoint.x -= (CGRectGetWidth(self.handler.frame) / 2.0f);
+    thePoint.y -= (CGRectGetHeight(self.handler.frame) / 2.0f);
+    thePoint = [self fixFinalPoint:thePoint];
     NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
-    [UIView beginAnimations:nil context:nil];
-    [self.handler setFrame:CGRectMake(toPoint.x, toPoint.y, self.handler.frame.size.width, self.handler.frame.size.height)];
-    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:index];
-    [UIView commitAnimations];
+    self.handler.frame = CGRectMake(thePoint.x, thePoint.y, CGRectGetWidth(self.handler.frame), CGRectGetHeight(self.handler.frame));
+    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:theIndex];
+}
+
+- (void)animateHandlerToIndex:(NSInteger)theIndex {
+    [UIView
+     animateWithDuration:0.3f
+     animations:^{
+         [self layoutHandlerAtIndex:theIndex];
+     }];
 }
 
 - (void)setSelectedIndex:(int)theIndex {

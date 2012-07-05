@@ -47,6 +47,7 @@ static NSString *const kHandlerBackgroundImagePropertyName = @"handlerBackground
         [self addObserver:self forKeyPath:kKnobSublayerPropertyName options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:NULL];
         [self addObserver:self forKeyPath:kHandlerBackgroundImagePropertyName options:NSKeyValueObservingOptionNew context:NULL];
         self.length = 28.0f;
+        self.bounds = CGRectMake(0.0f, 0.0f, self.length, self.length);
     }
     return self;
 }
@@ -97,7 +98,7 @@ static NSString *const kHandlerBackgroundImagePropertyName = @"handlerBackground
 #pragma mark - Key-Value Observing methods
 
 - (void)observeValueForKeyPath:(NSString *)theKeyPath ofObject:(id)theObject change:(NSDictionary *)theChange context:(void *)theContext {
-    if ([theKeyPath isEqualToString:kHandlerColorPropertyName] || [theKeyPath isEqualToString:kHandlerBackgroundImagePropertyName]) {
+    if ([theKeyPath isEqualToString:kHandlerColorPropertyName]) {
         NSKeyValueChange theKeyValueChange = ((NSNumber *)[theChange objectForKey:NSKeyValueChangeKindKey]).unsignedIntegerValue;
         switch (theKeyValueChange) {
             case NSKeyValueChangeSetting: {
@@ -124,6 +125,23 @@ static NSString *const kHandlerBackgroundImagePropertyName = @"handlerBackground
                     theNewLayer = nil;
                 }
                 [self.layer addSublayer:theNewLayer];
+            } break;
+            default: {
+                @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                               reason:@"Invalid execution path."
+                                             userInfo:nil];
+            } break;
+        }
+    } else if ([theKeyPath isEqualToString:kHandlerBackgroundImagePropertyName]) {
+        NSKeyValueChange theKeyValueChange = ((NSNumber *)[theChange objectForKey:NSKeyValueChangeKindKey]).unsignedIntegerValue;
+        switch (theKeyValueChange) {
+            case NSKeyValueChangeSetting: {
+                if (self.handlerBackgroundImage) {
+                    self.bounds = CGRectMake(0.0f, 0.0f, self.handlerBackgroundImage.size.width, self.handlerBackgroundImage.size.height);
+                } else {
+                    self.bounds = CGRectMake(0.0f, 0.0f, self.length, self.length);
+                }
+                [self setNeedsLayout];
             } break;
             default: {
                 @throw [NSException exceptionWithName:NSInternalInconsistencyException
