@@ -75,35 +75,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
     self.handler.handlerColor = theColor;
 }
 
--(void) animateTitlesToIndex:(int) index{
-    int i;
-    UILabel *lbl;
-    for (i = 0; i < [self countOfTitles]; i++) {
-        lbl = (UILabel *)[self viewWithTag:i+50];
-        [UIView beginAnimations:nil context:nil];
-        [UIView setAnimationBeginsFromCurrentState:YES];
-        if (i == index) {
-            NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
-            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
-            theCenterPoint.y -= 20.0f;
-            theCenterPoint.y -= self.selectedOffset.height;
-            lbl.center = theCenterPoint;
-            [lbl setAlpha:1];
-            lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
-            lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
-        }else{
-            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
-            theCenterPoint.y -= 20.0f;
-            lbl.center = theCenterPoint;
-            [lbl setAlpha:TITLE_FADE_ALPHA];
-            lbl.textColor = TITLE_COLOR;
-            lbl.font = TITLE_FONT;
-        }
-        [UIView commitAnimations];
-    }
-}
-
-- (void)layoutTitleLabels {
+- (void)layoutTitleLabelsForSelectedIndex:(NSInteger)theSelectedIndex {
     [self.titleLabels enumerateObjectsUsingBlock:^(id theObject, NSUInteger theIndex, BOOL *theStop) {
         UILabel *theTitleLabel = (UILabel *)theObject;
         CGSize theTitleSize = [theTitleLabel.text sizeWithFont:theTitleLabel.font];
@@ -111,11 +83,28 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
         CGPoint theCenterPoint = [self getCenterPointForIndex:theIndex];
         theCenterPoint.x -= (theTitleSize.width / 2.0f);
         theCenterPoint.y = self.titleCenterY - (theTitleSize.height / 2.0f);
-        if (theIndex == self.selectedIndex) {
+        if (theIndex == theSelectedIndex) {
             theCenterPoint.y -= self.selectedOffset.height;
+            
+            NSDictionary *theDictionary = [self objectInTitlesAtIndex:theIndex];
+            theTitleLabel.alpha = 1.0f;
+            theTitleLabel.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
+            theTitleLabel.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
+        } else {
+            theTitleLabel.alpha = TITLE_FADE_ALPHA;
+            theTitleLabel.textColor = TITLE_COLOR;
+            theTitleLabel.font = TITLE_FONT;
         }
         theTitleLabel.frame = CGRectMake(theCenterPoint.x, theCenterPoint.y, theTitleSize.width, theTitleSize.height);
     }];
+}
+
+- (void)animateTitleLabelsForSelectedIndex:(NSInteger)theSelectedIndex {
+    [UIView
+     animateWithDuration:0.3f
+     animations:^{
+         [self layoutTitleLabelsForSelectedIndex:theSelectedIndex];
+     }];
 }
 
 - (void)layoutHandlerAtIndex:(NSInteger)theIndex {
@@ -241,7 +230,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 
 - (void)setSelectedIndex:(int)theIndex {
     _selectedIndex = theIndex;
-    [self animateTitlesToIndex:theIndex];
+    [self animateTitleLabelsForSelectedIndex:_selectedIndex];
     [self animateHandlerToIndex:theIndex];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
@@ -291,7 +280,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
     
     self.backgroundView.frame = self.bounds;
     
-    [self layoutTitleLabels];
+    [self layoutTitleLabelsForSelectedIndex:self.selectedIndex];
     
     [self layoutHandlerAtIndex:self.selectedIndex];
 }
@@ -370,7 +359,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
     
     int selected = [self getSelectedTitleInPoint:btn.center];
     
-    [self animateTitlesToIndex:selected];
+    [self animateTitleLabelsForSelectedIndex:selected];
     
     [self sendActionsForControlEvents:UIControlEventTouchDragInside];
 }
