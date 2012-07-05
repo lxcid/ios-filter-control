@@ -21,6 +21,8 @@
 NSString *const kTitlesTextKey = @"text";
 NSString *const kTitlesSelectedColorKey = @"selectedColor";
 NSString *const kTitlesSelectedFontKey = @"font";
+static NSString *const kTitlesPropertyName = @"titles";
+static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 
 @interface SEFilterControl() {
     CGPoint diffPoint;
@@ -99,6 +101,21 @@ NSString *const kTitlesSelectedFontKey = @"font";
         }
         [UIView commitAnimations];
     }
+}
+
+- (void)layoutTitleLabels {
+    [self.titleLabels enumerateObjectsUsingBlock:^(id theObject, NSUInteger theIndex, BOOL *theStop) {
+        UILabel *theTitleLabel = (UILabel *)theObject;
+        CGSize theTitleSize = [theTitleLabel.text sizeWithFont:theTitleLabel.font];
+        theTitleSize.width = oneSlotSize;
+        CGPoint theCenterPoint = [self getCenterPointForIndex:theIndex];
+        theCenterPoint.x -= (theTitleSize.width / 2.0f);
+        theCenterPoint.y = self.titleCenterY - (theTitleSize.height / 2.0f);
+        if (theIndex == self.selectedIndex) {
+            theCenterPoint.y -= self.selectedOffset.height;
+        }
+        theTitleLabel.frame = CGRectMake(theCenterPoint.x, theCenterPoint.y, theTitleSize.width, theTitleSize.height);
+    }];
 }
 
 - (void)layoutHandlerAtIndex:(NSInteger)theIndex {
@@ -231,8 +248,22 @@ NSString *const kTitlesSelectedFontKey = @"font";
 
 #pragma mark -
 
-- (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles {
+- (id)initWithFrame:(CGRect)theFrame {
     self = [super initWithFrame:theFrame];
+    if (self) {
+        [self addObserver:self forKeyPath:kTitlesPropertyName options:NSKeyValueObservingOptionNew context:NULL];
+        [self addObserver:self forKeyPath:kTitleLabelsPropertyName options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:NULL];
+        
+        self.progressBarCenterY = CGRectGetHeight(self.bounds) - 25.0f;
+        self.progressBarHeight = 3.0f;
+        self.progressBarSelectionCircleLength = self.handler.length - (6.0f * 2.0f);
+        self.titleCenterY = self.progressBarCenterY - 20.0f;
+    }
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles {
+    self = [self initWithFrame:theFrame];
     if (self) {
         self.padding = thePadding;
         self.titles = [[NSArray alloc] initWithArray:theTitles];
@@ -241,42 +272,18 @@ NSString *const kTitlesSelectedFontKey = @"font";
         self.tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
         [self addGestureRecognizer:self.tapGestureRecognizer];
         
-        self.progressBarCenterY = CGRectGetHeight(self.bounds) - 25.0f;
-        self.progressBarHeight = 3.0f;
-        self.progressBarSelectionCircleLength = self.handler.length - (6.0f * 2.0f);
-        
         oneSlotSize = 1.f*(self.frame.size.width-self.padding.left-self.padding.right-1)/([self countOfTitles]-1);
-        for (int i = 0; i < [self countOfTitles]; i++) {
-            NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
-            UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, oneSlotSize, 25.0f)];
-            lbl.text = [theDictionary objectForKey:kTitlesTextKey];
-            lbl.lineBreakMode = UILineBreakModeMiddleTruncation;
-            lbl.textAlignment = UITextAlignmentCenter;
-            lbl.backgroundColor = [UIColor clearColor];
-            lbl.tag = i + 50;
-            
-            if (self.selectedIndex == i) {
-                CGPoint theCenterPoint = [self getCenterPointForIndex:i];
-                theCenterPoint.y -= 20.0f;
-                theCenterPoint.y -= self.selectedOffset.height;
-                lbl.center = theCenterPoint;
-                lbl.alpha = 1.0f;
-                lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
-                lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
-            } else {
-                CGPoint theCenterPoint = [self getCenterPointForIndex:i];
-                theCenterPoint.y -= 20.0f;
-                lbl.center = theCenterPoint;
-                lbl.alpha = TITLE_FADE_ALPHA;
-                lbl.textColor = TITLE_COLOR;
-                lbl.font = TITLE_FONT;
-            }
-            
-            [self addSubview:lbl];
-            [lbl release];
-        }
     }
     return self;
+}
+
+- (void)dealloc {
+    [self.handler removeTarget:self action:@selector(touchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
+    [self.handler removeTarget:self action:@selector(touchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
+    [self.handler removeTarget:self action:@selector(touchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
+    
+    [self removeObserver:self forKeyPath:kTitlesPropertyName context:NULL];
+    [self removeObserver:self forKeyPath:kTitleLabelsPropertyName context:NULL];
 }
 
 - (void)layoutSubviews {
@@ -284,13 +291,9 @@ NSString *const kTitlesSelectedFontKey = @"font";
     
     self.backgroundView.frame = self.bounds;
     
+    [self layoutTitleLabels];
+    
     [self layoutHandlerAtIndex:self.selectedIndex];
-}
-
--(void)dealloc{
-    [self.handler removeTarget:self action:@selector(touchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-    [self.handler removeTarget:self action:@selector(touchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
-    [self.handler removeTarget:self action:@selector(touchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
 }
 
 #pragma mark - titles Key-Value Coding methods
@@ -309,6 +312,24 @@ NSString *const kTitlesSelectedFontKey = @"font";
 
 - (void)getTitles:(NSDictionary * __unsafe_unretained *)theBuffer range:(NSRange)inRange {
     [self.titles getObjects:theBuffer range:inRange];
+}
+
+#pragma mark - titleLabels Key-Value Coding methods
+
+- (NSUInteger)countOfTitleLabels {
+    return self.titleLabels.count;
+}
+
+- (NSDictionary *)objectInTitleLabelsAtIndex:(NSUInteger)theIndex {
+    return [self.titleLabels objectAtIndex:theIndex];
+}
+
+- (NSArray *)titleLabelsAtIndexes:(NSIndexSet *)theIndexes {
+    return [self.titleLabels objectsAtIndexes:theIndexes];
+}
+
+- (void)getTitleLabels:(NSDictionary * __unsafe_unretained *)theBuffer range:(NSRange)inRange {
+    [self.titleLabels getObjects:theBuffer range:inRange];
 }
 
 #pragma mark - Target-Action methods
@@ -359,6 +380,83 @@ NSString *const kTitlesSelectedFontKey = @"font";
     [self animateHandlerToIndex:_selectedIndex];
     [self sendActionsForControlEvents:UIControlEventTouchUpInside];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
+#pragma mark - Key-Value Observing methods
+
+- (void)observeValueForKeyPath:(NSString *)theKeyPath ofObject:(id)theObject change:(NSDictionary *)theChange context:(void *)theContext {
+    if ([theKeyPath isEqualToString:kTitlesPropertyName]) {
+        NSKeyValueChange theKeyValueChange = ((NSNumber *)[theChange objectForKey:NSKeyValueChangeKindKey]).unsignedIntegerValue;
+        switch (theKeyValueChange) {
+            case NSKeyValueChangeSetting: {
+                if (self.titles) {
+                    NSMutableArray *theTitleLabels = [[NSMutableArray alloc] init];
+                    [self.titles enumerateObjectsUsingBlock:^(id theObject, NSUInteger theIndex, BOOL *theStop) {
+                        NSDictionary *theDictionary = (NSDictionary *)theObject;
+                        
+                        UILabel *theTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+                        theTitleLabel.text = [theDictionary objectForKey:kTitlesTextKey];
+                        theTitleLabel.lineBreakMode = UILineBreakModeMiddleTruncation;
+                        theTitleLabel.textAlignment = UITextAlignmentCenter;
+                        theTitleLabel.backgroundColor = [UIColor clearColor];
+                        
+                        theTitleLabel.tag = theIndex + 50;
+                        
+                        CGPoint theCenterPoint = [self getCenterPointForIndex:theIndex];
+                        theCenterPoint.y -= [theTitleLabel.text sizeWithFont:theTitleLabel.font].height;
+                        if (self.selectedIndex == theIndex) {
+                            theCenterPoint.y -= self.selectedOffset.height;
+                            theTitleLabel.center = theCenterPoint;
+                            theTitleLabel.alpha = 1.0f;
+                            theTitleLabel.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
+                            theTitleLabel.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
+                        } else {
+                            theTitleLabel.center = theCenterPoint;
+                            theTitleLabel.alpha = TITLE_FADE_ALPHA;
+                            theTitleLabel.textColor = TITLE_COLOR;
+                            theTitleLabel.font = TITLE_FONT;
+                        }
+                        [theTitleLabels addObject:theTitleLabel];
+                    }];
+                    self.titleLabels = [theTitleLabels copy];
+                } else {
+                    self.titleLabels = nil;
+                }
+            } break;
+            default: {
+                @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                               reason:@"Invalid execution path."
+                                             userInfo:nil];
+            } break;
+        }
+    } else if ([theKeyPath isEqualToString:kTitleLabelsPropertyName]) {
+        NSKeyValueChange theKeyValueChange = ((NSNumber *)[theChange objectForKey:NSKeyValueChangeKindKey]).unsignedIntegerValue;
+        switch (theKeyValueChange) {
+            case NSKeyValueChangeSetting: {
+                NSArray *theOldArray = [theChange objectForKey:NSKeyValueChangeOldKey];
+                if ([theOldArray isEqual:[NSNull null]]) {
+                    theOldArray = nil;
+                }
+                for (UILabel *theTitleLabel in theOldArray) {
+                    [theTitleLabel removeFromSuperview];
+                }
+                
+                NSArray *theNewArray = [theChange objectForKey:NSKeyValueChangeNewKey];
+                if ([theNewArray isEqual:[NSNull null]]) {
+                    theNewArray = nil;
+                }
+                for (UILabel *theTitleLabel in theNewArray) {
+                    [self addSubview:theTitleLabel];
+                }
+                [self setNeedsLayout];
+            } break;
+            default: {
+                @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                               reason:@"Invalid execution path."
+                                             userInfo:nil];
+            } break;
+        }
+    }
 }
 
 @end
