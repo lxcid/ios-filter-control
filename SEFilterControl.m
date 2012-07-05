@@ -68,7 +68,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
         self.titles = [[NSArray alloc] initWithArray:theTitles];
         self.progressColor = [UIColor colorWithWhite:0.824f alpha:1.0f];
         
-        UITapGestureRecognizer *theTapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(itemSelected:)] autorelease];
+        UITapGestureRecognizer *theTapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
         [self addGestureRecognizer:theTapGestureRecognizer];
         
         CGFloat theHandleLength = 28.0f;
@@ -325,6 +325,27 @@ NSString *const kTitlesSelectedFontKey = @"font";
 
 - (void)getTitles:(NSDictionary * __unsafe_unretained *)theBuffer range:(NSRange)inRange {
     [self.titles getObjects:theBuffer range:inRange];
+}
+
+#pragma mark - Target-Action methods
+
+- (void)handleTapGesture:(UITapGestureRecognizer *)theTapGestureRecognizer {
+    switch (theTapGestureRecognizer.state) {
+        case UIGestureRecognizerStateBegan: {
+            [self sendActionsForControlEvents:UIControlEventTouchDown];
+        } break;
+        case UIGestureRecognizerStateEnded: {
+            CGPoint theLocation = [theTapGestureRecognizer locationInView:self];
+            NSInteger theSelectedIndex = [self getSelectedTitleInPoint:theLocation];
+            if (self.selectedIndex != theSelectedIndex) {
+                self.selectedIndex = theSelectedIndex;
+                [self sendActionsForControlEvents:UIControlEventValueChanged];
+            }
+            [self sendActionsForControlEvents:UIControlEventTouchUpInside];
+        } break;
+        default: {
+        } break;
+    }
 }
 
 @end
