@@ -141,9 +141,9 @@ NSString *const kTitlesSelectedFontKey = @"font";
     if (_handler == nil) {
         _handler = [SEFilterKnob buttonWithType:UIButtonTypeCustom];
         _handler.adjustsImageWhenHighlighted = NO;
-        [_handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-        [_handler addTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
-        [_handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
+        [_handler addTarget:self action:@selector(touchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
+        [_handler addTarget:self action:@selector(touchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
+        [_handler addTarget:self action:@selector(touchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
         [self addSubview:_handler];
     }
     return _handler;
@@ -223,12 +223,6 @@ NSString *const kTitlesSelectedFontKey = @"font";
     self.handler.handlerColor = theColor;
 }
 
-- (void) TouchDown: (UIButton *) btn withEvent: (UIEvent *) ev{
-    CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
-    diffPoint = CGPointMake(currPoint.x - btn.frame.origin.x, currPoint.y - btn.frame.origin.y);
-    [self sendActionsForControlEvents:UIControlEventTouchDown];
-}
-
 -(void) animateTitlesToIndex:(int) index{
     int i;
     UILabel *lbl;
@@ -286,29 +280,6 @@ NSString *const kTitlesSelectedFontKey = @"font";
     return round((pnt.x-self.padding.left)/oneSlotSize);
 }
 
-- (void)TouchUp:(UIButton *)btn {
-    _selectedIndex = [self getSelectedTitleInPoint:btn.center];
-    [self animateHandlerToIndex:_selectedIndex];
-    [self sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
-}
-
-- (void) TouchMove: (UIButton *) btn withEvent: (UIEvent *) ev {
-    CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
-    
-    CGPoint toPoint = CGPointMake(currPoint.x-diffPoint.x, self.handler.frame.origin.y);
-    
-    toPoint = [self fixFinalPoint:toPoint];
-    
-    [self.handler setFrame:CGRectMake(toPoint.x, toPoint.y, self.handler.frame.size.width, self.handler.frame.size.height)];
-    
-    int selected = [self getSelectedTitleInPoint:btn.center];
-    
-    [self animateTitlesToIndex:selected];
-    
-    [self sendActionsForControlEvents:UIControlEventTouchDragInside];
-}
-
 -(void)dealloc{
     [self.handler removeTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
     [self.handler removeTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
@@ -357,6 +328,35 @@ NSString *const kTitlesSelectedFontKey = @"font";
         default: {
         } break;
     }
+}
+
+- (void)touchDown:(UIButton *)btn withEvent: (UIEvent *)ev {
+    CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
+    diffPoint = CGPointMake(currPoint.x - btn.frame.origin.x, currPoint.y - btn.frame.origin.y);
+    [self sendActionsForControlEvents:UIControlEventTouchDown];
+}
+
+- (void)touchMove:(UIButton *)btn withEvent:(UIEvent *)ev {
+    CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
+    
+    CGPoint toPoint = CGPointMake(currPoint.x-diffPoint.x, self.handler.frame.origin.y);
+    
+    toPoint = [self fixFinalPoint:toPoint];
+    
+    [self.handler setFrame:CGRectMake(toPoint.x, toPoint.y, self.handler.frame.size.width, self.handler.frame.size.height)];
+    
+    int selected = [self getSelectedTitleInPoint:btn.center];
+    
+    [self animateTitlesToIndex:selected];
+    
+    [self sendActionsForControlEvents:UIControlEventTouchDragInside];
+}
+
+- (void)touchUp:(UIButton *)btn {
+    _selectedIndex = [self getSelectedTitleInPoint:btn.center];
+    [self animateHandlerToIndex:_selectedIndex];
+    [self sendActionsForControlEvents:UIControlEventTouchUpInside];
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
 @end
