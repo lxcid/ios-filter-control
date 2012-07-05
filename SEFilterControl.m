@@ -14,8 +14,6 @@
 #import "SEFilterControl.h"
 #import "SEFilterKnob.h"
 
-#define LEFT_OFFSET 35.0f
-#define RIGHT_OFFSET 35.0f
 #define TITLE_SELECTED_DISTANCE 5.0f
 #define TITLE_FADE_ALPHA 0.5f
 #define TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Medium" size:12.0f]
@@ -39,22 +37,23 @@ NSString *const kTitlesSelectedFontKey = @"font";
 @synthesize selectedIndex = _selectedIndex;
 @synthesize progressColor = _progressColor;
 @synthesize handler = _handler;
+@synthesize padding = _padding;
 
 -(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
     CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)([self countOfTitles] - 1);
-    CGFloat theWidth = CGRectGetWidth(self.bounds) - LEFT_OFFSET - RIGHT_OFFSET;
+    CGFloat theWidth = CGRectGetWidth(self.bounds) - self.padding.left - self.padding.right;
     CGFloat theHandleLength = 28.0f;
     
-    return CGPointMake(LEFT_OFFSET + (theNormalizedIndex * theWidth), CGRectGetHeight(self.bounds) - (theHandleLength / 2.0f) - 10.0f);
+    return CGPointMake(self.padding.left + (theNormalizedIndex * theWidth), CGRectGetHeight(self.bounds) - (theHandleLength / 2.0f) - 10.0f);
 }
 
 -(CGPoint)fixFinalPoint:(CGPoint)thePoint {
-    CGFloat theMinHandleMinX = LEFT_OFFSET - (CGRectGetWidth(self.handler.frame) / 2.0f);
+    CGFloat theMinHandleMinX = self.padding.left - (CGRectGetWidth(self.handler.frame) / 2.0f);
     if (thePoint.x < theMinHandleMinX) {
         thePoint.x = theMinHandleMinX;
         return thePoint;
     }
-    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - RIGHT_OFFSET - (CGRectGetWidth(self.handler.frame) / 2.0f);
+    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - self.padding.right - (CGRectGetWidth(self.handler.frame) / 2.0f);
     if (thePoint.x > theMaxHandleMinX) {
         thePoint.x = theMaxHandleMinX;
         return thePoint;
@@ -62,26 +61,26 @@ NSString *const kTitlesSelectedFontKey = @"font";
     return thePoint;
 }
 
-- (id)initWithFrame:(CGRect)theFrame titles:(NSArray *)theTitles {
+- (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles {
     self = [super initWithFrame:theFrame];
     if (self) {
-        self.backgroundColor = [UIColor clearColor];
+        self.padding = thePadding;
         self.titles = [[NSArray alloc] initWithArray:theTitles];
+        self.backgroundColor = [UIColor clearColor];
         self.progressColor = [UIColor colorWithWhite:0.824f alpha:1.0f];
-        
         self.tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
         [self addGestureRecognizer:self.tapGestureRecognizer];
         
         CGFloat theHandleLength = 28.0f;
         self.handler = [SEFilterKnob buttonWithType:UIButtonTypeCustom];
-        [self.handler setFrame:CGRectMake(LEFT_OFFSET - (theHandleLength / 2.0f), CGRectGetHeight(self.bounds) - theHandleLength - 10.0f, theHandleLength, theHandleLength)];
+        [self.handler setFrame:CGRectMake(self.padding.left - (theHandleLength / 2.0f), CGRectGetHeight(self.bounds) - theHandleLength - 10.0f, theHandleLength, theHandleLength)];
         [self.handler setAdjustsImageWhenHighlighted:NO];
         [self.handler addTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
         [self.handler addTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
         [self.handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
         [self addSubview:self.handler];
         
-        oneSlotSize = 1.f*(self.frame.size.width-LEFT_OFFSET-RIGHT_OFFSET-1)/([self countOfTitles]-1);
+        oneSlotSize = 1.f*(self.frame.size.width-self.padding.left-self.padding.right-1)/([self countOfTitles]-1);
         for (int i = 0; i < [self countOfTitles]; i++) {
             NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
             UILabel *lbl = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, oneSlotSize, 25.0f)];
@@ -126,7 +125,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
     
     CGContextSetFillColorWithColor(context, self.progressColor.CGColor);
     
-    CGContextFillRect(context, CGRectMake(LEFT_OFFSET, CGRectGetHeight(rect) - theMinY, CGRectGetWidth(rect) - RIGHT_OFFSET - LEFT_OFFSET, 3.0f));
+    CGContextFillRect(context, CGRectMake(self.padding.left, CGRectGetHeight(rect) - theMinY, CGRectGetWidth(rect) - self.padding.right - self.padding.left, 3.0f));
     
     CGContextRestoreGState(context);
     
@@ -136,8 +135,8 @@ NSString *const kTitlesSelectedFontKey = @"font";
     CGContextSaveGState(context);
     
     CGContextBeginPath(context);
-    CGContextMoveToPoint(context, LEFT_OFFSET, CGRectGetHeight(rect) - theMinY);
-    CGContextAddLineToPoint(context, CGRectGetWidth(rect) - RIGHT_OFFSET, CGRectGetHeight(rect) - theMinY);
+    CGContextMoveToPoint(context, self.padding.left, CGRectGetHeight(rect) - theMinY);
+    CGContextAddLineToPoint(context, CGRectGetWidth(rect) - self.padding.right, CGRectGetHeight(rect) - theMinY);
     CGContextClosePath(context);
     
     CGColorRef shadowColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.9f].CGColor;
@@ -154,8 +153,8 @@ NSString *const kTitlesSelectedFontKey = @"font";
     CGContextSaveGState(context);
     
     CGContextBeginPath(context);
-    CGContextMoveToPoint(context, LEFT_OFFSET, CGRectGetHeight(rect) - theMinY + theHeight);
-    CGContextAddLineToPoint(context, CGRectGetWidth(rect) - RIGHT_OFFSET, CGRectGetHeight(rect) - theMinY + theHeight);
+    CGContextMoveToPoint(context, self.padding.left, CGRectGetHeight(rect) - theMinY + theHeight);
+    CGContextAddLineToPoint(context, CGRectGetWidth(rect) - self.padding.right, CGRectGetHeight(rect) - theMinY + theHeight);
     CGContextClosePath(context);
     
     CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f].CGColor);
@@ -265,15 +264,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
 }
 
 - (int)getSelectedTitleInPoint:(CGPoint)pnt {
-    return round((pnt.x-LEFT_OFFSET)/oneSlotSize);
-}
-
-- (void)itemSelected:(UITapGestureRecognizer *)theTapGestureRecognizer {
-    _selectedIndex = [self getSelectedTitleInPoint:[theTapGestureRecognizer locationInView:self]];
-    [self setSelectedIndex:_selectedIndex];
-    
-    [self sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
+    return round((pnt.x-self.padding.left)/oneSlotSize);
 }
 
 - (void)TouchUp:(UIButton *)btn {
