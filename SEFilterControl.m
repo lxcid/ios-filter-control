@@ -288,14 +288,9 @@ NSString *const kTitlesSelectedFontKey = @"font";
 }
 
 -(void)dealloc{
-    [self.handler removeTarget:self action:@selector(TouchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
-    [self.handler removeTarget:self action:@selector(TouchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
-    [self.handler removeTarget:self action:@selector(TouchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
-    self.handler = nil;
-    self.titles = nil;
-    self.progressColor = nil;
-    
-    [super dealloc];
+    [self.handler removeTarget:self action:@selector(touchDown:withEvent:) forControlEvents:UIControlEventTouchDown];
+    [self.handler removeTarget:self action:@selector(touchUp:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside];
+    [self.handler removeTarget:self action:@selector(touchMove:withEvent: ) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
 }
 
 #pragma mark - titles Key-Value Coding methods
