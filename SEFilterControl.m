@@ -109,14 +109,26 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
      }];
 }
 
+- (void)changeHandlerColorToIndex:(NSInteger)theIndex {
+    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
+    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:theIndex];
+}
+
+- (void)animateHandlerColorToIndex:(NSInteger)theIndex {
+    [UIView
+     animateWithDuration:0.3f
+     animations:^{
+         [self changeHandlerColorToIndex:theIndex];
+     }];
+}
+
 - (void)layoutHandlerAtIndex:(NSInteger)theIndex {
     CGPoint thePoint = [self getCenterPointForIndex:theIndex];
     thePoint.x -= (CGRectGetWidth(self.handler.frame) / 2.0f);
     thePoint.y -= (CGRectGetHeight(self.handler.frame) / 2.0f);
     thePoint = [self fixFinalPoint:thePoint];
-    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
     self.handler.frame = CGRectMake(thePoint.x, thePoint.y, CGRectGetWidth(self.handler.frame), CGRectGetHeight(self.handler.frame));
-    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:theIndex];
+    [self changeHandlerColorToIndex:theIndex];
 }
 
 - (void)animateHandlerToIndex:(NSInteger)theIndex {
@@ -233,7 +245,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 - (void)setSelectedIndex:(int)theIndex {
     _selectedIndex = theIndex;
     [self animateTitleLabelsForSelectedIndex:_selectedIndex];
-    [self animateHandlerToIndex:theIndex];
+    [self animateHandlerToIndex:_selectedIndex];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
@@ -333,10 +345,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
         case UIGestureRecognizerStateEnded: {
             CGPoint theLocation = [theTapGestureRecognizer locationInView:self];
             NSInteger theSelectedIndex = [self getSelectedTitleInPoint:theLocation];
-            if (self.selectedIndex != theSelectedIndex) {
-                self.selectedIndex = theSelectedIndex;
-                [self sendActionsForControlEvents:UIControlEventValueChanged];
-            }
+            self.selectedIndex = theSelectedIndex;
             [self sendActionsForControlEvents:UIControlEventTouchUpInside];
         } break;
         default: {
@@ -362,15 +371,15 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
     int selected = [self getSelectedTitleInPoint:btn.center];
     
     [self animateTitleLabelsForSelectedIndex:selected];
+    [self animateHandlerColorToIndex:selected];
     
     [self sendActionsForControlEvents:UIControlEventTouchDragInside];
 }
 
 - (void)touchUp:(UIButton *)btn {
-    _selectedIndex = [self getSelectedTitleInPoint:btn.center];
+    self.selectedIndex = [self getSelectedTitleInPoint:btn.center];
     [self animateHandlerToIndex:_selectedIndex];
     [self sendActionsForControlEvents:UIControlEventTouchUpInside];
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
 #pragma mark - Key-Value Observing methods
