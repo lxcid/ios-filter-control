@@ -26,6 +26,7 @@ extern NSString *const kTitlesSelectedFontKey;
 @property (retain, nonatomic) UIColor *progressColor;
 @property (assign, nonatomic) NSInteger selectedIndex;
 @property (strong, nonatomic) NSArray *titles;
+@property (strong, nonatomic) NSArray *titleLabels;
 @property (strong, nonatomic) SEFilterKnob *handler;
 @property (assign, nonatomic) UIEdgeInsets padding;
 @property (assign, nonatomic) CGSize selectedOffset;

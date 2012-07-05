@@ -44,6 +44,9 @@ NSString *const kTitlesSelectedFontKey = @"font";
 @synthesize progressBarHeight = _progressBarHeight;
 @synthesize progressBarSelectionCircleLength = _progressBarSelectionCircleLength;
 @synthesize titleCenterY = _titleCenterY;
+@synthesize titleLabels = _titleLabels;
+
+#pragma mark - Helper methods
 
 - (CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
     CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)([self countOfTitles] - 1);
@@ -51,6 +54,76 @@ NSString *const kTitlesSelectedFontKey = @"font";
     
     return CGPointMake(self.padding.left + (theNormalizedIndex * theWidth), self.progressBarCenterY);
 }
+
+- (CGPoint)fixFinalPoint:(CGPoint)thePoint {
+    CGFloat theMinHandleMinX = self.padding.left - (CGRectGetWidth(self.handler.frame) / 2.0f);
+    if (thePoint.x < theMinHandleMinX) {
+        thePoint.x = theMinHandleMinX;
+        return thePoint;
+    }
+    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - self.padding.right - (CGRectGetWidth(self.handler.frame) / 2.0f);
+    if (thePoint.x > theMaxHandleMinX) {
+        thePoint.x = theMaxHandleMinX;
+        return thePoint;
+    }
+    return thePoint;
+}
+
+- (void)setHandlerColor:(UIColor *)theColor {
+    self.handler.handlerColor = theColor;
+}
+
+-(void) animateTitlesToIndex:(int) index{
+    int i;
+    UILabel *lbl;
+    for (i = 0; i < [self countOfTitles]; i++) {
+        lbl = (UILabel *)[self viewWithTag:i+50];
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationBeginsFromCurrentState:YES];
+        if (i == index) {
+            NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
+            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
+            theCenterPoint.y -= 20.0f;
+            theCenterPoint.y -= self.selectedOffset.height;
+            lbl.center = theCenterPoint;
+            [lbl setAlpha:1];
+            lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
+            lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
+        }else{
+            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
+            theCenterPoint.y -= 20.0f;
+            lbl.center = theCenterPoint;
+            [lbl setAlpha:TITLE_FADE_ALPHA];
+            lbl.textColor = TITLE_COLOR;
+            lbl.font = TITLE_FONT;
+        }
+        [UIView commitAnimations];
+    }
+}
+
+- (void)layoutHandlerAtIndex:(NSInteger)theIndex {
+    CGPoint thePoint = [self getCenterPointForIndex:theIndex];
+    thePoint.x -= (CGRectGetWidth(self.handler.frame) / 2.0f);
+    thePoint.y -= (CGRectGetHeight(self.handler.frame) / 2.0f);
+    thePoint = [self fixFinalPoint:thePoint];
+    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
+    self.handler.frame = CGRectMake(thePoint.x, thePoint.y, CGRectGetWidth(self.handler.frame), CGRectGetHeight(self.handler.frame));
+    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:theIndex];
+}
+
+- (void)animateHandlerToIndex:(NSInteger)theIndex {
+    [UIView
+     animateWithDuration:0.3f
+     animations:^{
+         [self layoutHandlerAtIndex:theIndex];
+     }];
+}
+
+- (NSInteger)getSelectedTitleInPoint:(CGPoint)thePoint {
+    return (NSInteger)round((thePoint.x - self.padding.left) / oneSlotSize);
+}
+
+#pragma mark - Property accessor methods
 
 - (UIImage *)backgroundImage {
     if (_backgroundImage == nil) {
@@ -149,19 +222,14 @@ NSString *const kTitlesSelectedFontKey = @"font";
     return _handler;
 }
 
--(CGPoint)fixFinalPoint:(CGPoint)thePoint {
-    CGFloat theMinHandleMinX = self.padding.left - (CGRectGetWidth(self.handler.frame) / 2.0f);
-    if (thePoint.x < theMinHandleMinX) {
-        thePoint.x = theMinHandleMinX;
-        return thePoint;
-    }
-    CGFloat theMaxHandleMinX = CGRectGetWidth(self.bounds) - self.padding.right - (CGRectGetWidth(self.handler.frame) / 2.0f);
-    if (thePoint.x > theMaxHandleMinX) {
-        thePoint.x = theMaxHandleMinX;
-        return thePoint;
-    }
-    return thePoint;
+- (void)setSelectedIndex:(int)theIndex {
+    _selectedIndex = theIndex;
+    [self animateTitlesToIndex:theIndex];
+    [self animateHandlerToIndex:theIndex];
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
+
+#pragma mark -
 
 - (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles {
     self = [super initWithFrame:theFrame];
@@ -217,67 +285,6 @@ NSString *const kTitlesSelectedFontKey = @"font";
     self.backgroundView.frame = self.bounds;
     
     [self layoutHandlerAtIndex:self.selectedIndex];
-}
-
-- (void)setHandlerColor:(UIColor *)theColor {
-    self.handler.handlerColor = theColor;
-}
-
--(void) animateTitlesToIndex:(int) index{
-    int i;
-    UILabel *lbl;
-    for (i = 0; i < [self countOfTitles]; i++) {
-        lbl = (UILabel *)[self viewWithTag:i+50];
-        [UIView beginAnimations:nil context:nil];
-        [UIView setAnimationBeginsFromCurrentState:YES];
-        if (i == index) {
-            NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
-            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
-            theCenterPoint.y -= 20.0f;
-            theCenterPoint.y -= self.selectedOffset.height;
-            lbl.center = theCenterPoint;
-            [lbl setAlpha:1];
-            lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
-            lbl.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
-        }else{
-            CGPoint theCenterPoint = [self getCenterPointForIndex:i];
-            theCenterPoint.y -= 20.0f;
-            lbl.center = theCenterPoint;
-            [lbl setAlpha:TITLE_FADE_ALPHA];
-            lbl.textColor = TITLE_COLOR;
-            lbl.font = TITLE_FONT;
-        }
-        [UIView commitAnimations];
-    }
-}
-
-- (void)layoutHandlerAtIndex:(NSInteger)theIndex {
-    CGPoint thePoint = [self getCenterPointForIndex:theIndex];
-    thePoint.x -= (CGRectGetWidth(self.handler.frame) / 2.0f);
-    thePoint.y -= (CGRectGetHeight(self.handler.frame) / 2.0f);
-    thePoint = [self fixFinalPoint:thePoint];
-    NSArray *theTitlesSelectedColor = [self valueForKeyPath:@"titles.@unionOfObjects.selectedColor"];
-    self.handler.frame = CGRectMake(thePoint.x, thePoint.y, CGRectGetWidth(self.handler.frame), CGRectGetHeight(self.handler.frame));
-    self.handler.handlerColor = [theTitlesSelectedColor objectAtIndex:theIndex];
-}
-
-- (void)animateHandlerToIndex:(NSInteger)theIndex {
-    [UIView
-     animateWithDuration:0.3f
-     animations:^{
-         [self layoutHandlerAtIndex:theIndex];
-     }];
-}
-
-- (void)setSelectedIndex:(int)theIndex {
-    _selectedIndex = theIndex;
-    [self animateTitlesToIndex:theIndex];
-    [self animateHandlerToIndex:theIndex];
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
-}
-
-- (int)getSelectedTitleInPoint:(CGPoint)pnt {
-    return round((pnt.x-self.padding.left)/oneSlotSize);
 }
 
 -(void)dealloc{
