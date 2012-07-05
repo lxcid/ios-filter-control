@@ -36,6 +36,9 @@ extern NSString *const kTitlesSelectedFontKey;
 @property (assign, nonatomic) CGFloat progressBarHeight;
 @property (assign, nonatomic) CGFloat progressBarSelectionCircleLength;
 @property (assign, nonatomic) CGFloat titleCenterY;
+@property (strong, nonatomic) UIFont *titleFont;
+@property (strong, nonatomic) UIColor *titleColor;
+@property (assign, nonatomic) CGFloat titleAlpha;
 
 - (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles;
 - (void)setHandlerColor:(UIColor *)theColor;

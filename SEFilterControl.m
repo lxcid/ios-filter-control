@@ -14,10 +14,6 @@
 #import "SEFilterControl.h"
 #import "SEFilterKnob.h"
 
-#define TITLE_FADE_ALPHA 0.5f
-#define TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Medium" size:12.0f]
-#define TITLE_COLOR [UIColor colorWithWhite:0.2f alpha:1.0f]
-
 NSString *const kTitlesTextKey = @"text";
 NSString *const kTitlesSelectedColorKey = @"selectedColor";
 NSString *const kTitlesSelectedFontKey = @"font";
@@ -49,6 +45,9 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 @synthesize titleLabels = _titleLabels;
 @synthesize diffPoint = _diffPoint;
 @synthesize oneSlotSize = _oneSlotSize;
+@synthesize titleFont = _titleFont;
+@synthesize titleColor = _titleColor;
+@synthesize titleAlpha = _titleAlpha;
 
 #pragma mark - Helper methods
 
@@ -93,9 +92,9 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
             theTitleLabel.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
             theTitleLabel.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
         } else {
-            theTitleLabel.alpha = TITLE_FADE_ALPHA;
-            theTitleLabel.textColor = TITLE_COLOR;
-            theTitleLabel.font = TITLE_FONT;
+            theTitleLabel.alpha = self.titleAlpha;
+            theTitleLabel.textColor = self.titleColor;
+            theTitleLabel.font = self.titleFont;
         }
         theTitleLabel.frame = CGRectMake(theCenterPoint.x, theCenterPoint.y, theTitleSize.width, theTitleSize.height);
     }];
@@ -261,6 +260,10 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
         self.progressBarHeight = 3.0f;
         self.progressBarSelectionCircleLength = self.handler.length - (6.0f * 2.0f);
         self.titleCenterY = self.progressBarCenterY - 20.0f;
+        
+        self.titleAlpha = 0.5f;
+        self.titleFont = [UIFont fontWithName:@"HelveticaNeue-Medium" size:12.0f];
+        self.titleColor = [UIColor colorWithWhite:0.2f alpha:1.0f];
     }
     return self;
 }
@@ -412,9 +415,9 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
                             theTitleLabel.font = [theDictionary objectForKey:kTitlesSelectedFontKey];
                         } else {
                             theTitleLabel.center = theCenterPoint;
-                            theTitleLabel.alpha = TITLE_FADE_ALPHA;
-                            theTitleLabel.textColor = TITLE_COLOR;
-                            theTitleLabel.font = TITLE_FONT;
+                            theTitleLabel.alpha = self.titleAlpha;
+                            theTitleLabel.textColor = self.titleColor;
+                            theTitleLabel.font = self.titleFont;
                         }
                         [theTitleLabels addObject:theTitleLabel];
                     }];
