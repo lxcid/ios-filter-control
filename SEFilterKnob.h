@@ -16,5 +16,7 @@
 @interface SEFilterKnob : UIButton
 
 @property (strong, nonatomic) UIColor *handlerColor;
+@property (strong, nonatomic) UIImage *handlerBackgroundImage;
+@property (assign, nonatomic) CGFloat length;
 
 @end
