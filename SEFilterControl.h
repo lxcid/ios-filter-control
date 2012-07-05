@@ -42,5 +42,6 @@ extern NSString *const kTitlesSelectedFontKey;
 
 - (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles;
 - (void)setHandlerColor:(UIColor *)theColor;
+- (void)setSelectedIndex:(NSInteger)theSelectedIndex animated:(BOOL)theAnimated;
 
 @end

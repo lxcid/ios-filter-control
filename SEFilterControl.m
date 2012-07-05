@@ -241,11 +241,22 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
     return _handler;
 }
 
-- (void)setSelectedIndex:(int)theIndex {
-    _selectedIndex = theIndex;
+- (void)setSelectedIndex:(NSInteger)theSelectedIndex {
+    _selectedIndex = theSelectedIndex;
     [self animateTitleLabelsForSelectedIndex:_selectedIndex];
     [self animateHandlerToIndex:_selectedIndex];
     [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
+- (void)setSelectedIndex:(NSInteger)theSelectedIndex animated:(BOOL)theAnimated {
+    _selectedIndex = theSelectedIndex;
+    [UIView
+     animateWithDuration:(theAnimated) ? 0.3f : 0.0f
+     animations:^{
+         [self layoutTitleLabelsForSelectedIndex:_selectedIndex];
+         [self layoutHandlerAtIndex:_selectedIndex];
+         [self sendActionsForControlEvents:UIControlEventValueChanged];
+     }];
 }
 
 #pragma mark -
