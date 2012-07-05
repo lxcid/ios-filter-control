@@ -24,10 +24,10 @@ NSString *const kTitlesSelectedFontKey = @"font";
 static NSString *const kTitlesPropertyName = @"titles";
 static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 
-@interface SEFilterControl() {
-    CGPoint diffPoint;
-    float oneSlotSize;
-}
+@interface SEFilterControl()
+
+@property (assign, nonatomic) CGPoint diffPoint;
+@property (assign, nonatomic) CGFloat oneSlotSize;
 
 @end
 
@@ -47,6 +47,8 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 @synthesize progressBarSelectionCircleLength = _progressBarSelectionCircleLength;
 @synthesize titleCenterY = _titleCenterY;
 @synthesize titleLabels = _titleLabels;
+@synthesize diffPoint = _diffPoint;
+@synthesize oneSlotSize = _oneSlotSize;
 
 #pragma mark - Helper methods
 
@@ -79,7 +81,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
     [self.titleLabels enumerateObjectsUsingBlock:^(id theObject, NSUInteger theIndex, BOOL *theStop) {
         UILabel *theTitleLabel = (UILabel *)theObject;
         CGSize theTitleSize = [theTitleLabel.text sizeWithFont:theTitleLabel.font];
-        theTitleSize.width = oneSlotSize;
+        theTitleSize.width = self.oneSlotSize;
         CGPoint theCenterPoint = [self getCenterPointForIndex:theIndex];
         theCenterPoint.x -= (theTitleSize.width / 2.0f);
         theCenterPoint.y = self.titleCenterY - (theTitleSize.height / 2.0f);
@@ -126,7 +128,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 }
 
 - (NSInteger)getSelectedTitleInPoint:(CGPoint)thePoint {
-    return (NSInteger)round((thePoint.x - self.padding.left) / oneSlotSize);
+    return (NSInteger)round((thePoint.x - self.padding.left) / self.oneSlotSize);
 }
 
 #pragma mark - Property accessor methods
@@ -261,7 +263,7 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
         self.tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
         [self addGestureRecognizer:self.tapGestureRecognizer];
         
-        oneSlotSize = 1.f*(self.frame.size.width-self.padding.left-self.padding.right-1)/([self countOfTitles]-1);
+        self.oneSlotSize = (CGRectGetWidth(self.bounds) - self.padding.left - self.padding.right) / ([self countOfTitles] - 1);
     }
     return self;
 }
@@ -344,14 +346,14 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
 
 - (void)touchDown:(UIButton *)btn withEvent: (UIEvent *)ev {
     CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
-    diffPoint = CGPointMake(currPoint.x - btn.frame.origin.x, currPoint.y - btn.frame.origin.y);
+    self.diffPoint = CGPointMake(currPoint.x - btn.frame.origin.x, currPoint.y - btn.frame.origin.y);
     [self sendActionsForControlEvents:UIControlEventTouchDown];
 }
 
 - (void)touchMove:(UIButton *)btn withEvent:(UIEvent *)ev {
     CGPoint currPoint = [[[ev allTouches] anyObject] locationInView:self];
     
-    CGPoint toPoint = CGPointMake(currPoint.x-diffPoint.x, self.handler.frame.origin.y);
+    CGPoint toPoint = CGPointMake(currPoint.x - self.diffPoint.x, self.handler.frame.origin.y);
     
     toPoint = [self fixFinalPoint:toPoint];
     
