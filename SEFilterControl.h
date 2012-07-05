@@ -29,6 +29,7 @@ extern NSString *const kTitlesSelectedFontKey;
 @property (strong, nonatomic) NSArray *titles;
 @property (strong, nonatomic) SEFilterKnob *handler;
 @property (assign, nonatomic) UIEdgeInsets padding;
+@property (assign, nonatomic) CGSize selectedOffset;
 
 - (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles;
 - (void)setHandlerColor:(UIColor *)theColor;

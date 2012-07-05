@@ -14,7 +14,6 @@
 #import "SEFilterControl.h"
 #import "SEFilterKnob.h"
 
-#define TITLE_SELECTED_DISTANCE 5.0f
 #define TITLE_FADE_ALPHA 0.5f
 #define TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Medium" size:12.0f]
 #define TITLE_COLOR [UIColor colorWithWhite:0.2f alpha:1.0f]
@@ -38,6 +37,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
 @synthesize progressColor = _progressColor;
 @synthesize handler = _handler;
 @synthesize padding = _padding;
+@synthesize selectedOffset = _selectedOffset;
 
 -(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
     CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)([self countOfTitles] - 1);
@@ -93,7 +93,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
             if (self.selectedIndex == i) {
                 CGPoint theCenterPoint = [self getCenterPointForIndex:i];
                 theCenterPoint.y -= 20.0f;
-                theCenterPoint.y -= TITLE_SELECTED_DISTANCE;
+                theCenterPoint.y -= self.selectedOffset.height;
                 lbl.center = theCenterPoint;
                 lbl.alpha = 1.0f;
                 lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
@@ -228,7 +228,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
             NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
             CGPoint theCenterPoint = [self getCenterPointForIndex:i];
             theCenterPoint.y -= 20.0f;
-            theCenterPoint.y -= TITLE_SELECTED_DISTANCE;
+            theCenterPoint.y -= self.selectedOffset.height;
             lbl.center = theCenterPoint;
             [lbl setAlpha:1];
             lbl.textColor = [theDictionary objectForKey:kTitlesSelectedColorKey];
