@@ -22,6 +22,7 @@ extern NSString *const kTitlesSelectedFontKey;
 
 @interface SEFilterControl : UIControl
 
+@property (strong, nonatomic) UITapGestureRecognizer *tapGestureRecognizer;
 @property (retain, nonatomic) UIColor *progressColor;
 @property (assign, nonatomic) NSInteger selectedIndex;
 @property (strong, nonatomic) NSArray *titles;

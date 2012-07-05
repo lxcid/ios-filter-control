@@ -34,6 +34,7 @@ NSString *const kTitlesSelectedFontKey = @"font";
 
 @implementation SEFilterControl
 
+@synthesize tapGestureRecognizer = _tapGestureRecognizer;
 @synthesize titles = _titles;
 @synthesize selectedIndex = _selectedIndex;
 @synthesize progressColor = _progressColor;
@@ -68,8 +69,8 @@ NSString *const kTitlesSelectedFontKey = @"font";
         self.titles = [[NSArray alloc] initWithArray:theTitles];
         self.progressColor = [UIColor colorWithWhite:0.824f alpha:1.0f];
         
-        UITapGestureRecognizer *theTapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
-        [self addGestureRecognizer:theTapGestureRecognizer];
+        self.tapGestureRecognizer = [[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)] autorelease];
+        [self addGestureRecognizer:self.tapGestureRecognizer];
         
         CGFloat theHandleLength = 28.0f;
         self.handler = [SEFilterKnob buttonWithType:UIButtonTypeCustom];
