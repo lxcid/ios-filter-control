@@ -23,13 +23,18 @@ extern NSString *const kTitlesSelectedFontKey;
 @interface SEFilterControl : UIControl
 
 @property (strong, nonatomic) UITapGestureRecognizer *tapGestureRecognizer;
-
 @property (retain, nonatomic) UIColor *progressColor;
 @property (assign, nonatomic) NSInteger selectedIndex;
 @property (strong, nonatomic) NSArray *titles;
 @property (strong, nonatomic) SEFilterKnob *handler;
 @property (assign, nonatomic) UIEdgeInsets padding;
 @property (assign, nonatomic) CGSize selectedOffset;
+@property (strong, nonatomic) UIImage *backgroundImage;
+@property (strong, nonatomic) UIView *backgroundView;
+@property (assign, nonatomic) CGFloat progressBarCenterY;
+@property (assign, nonatomic) CGFloat progressBarHeight;
+@property (assign, nonatomic) CGFloat progressBarSelectionCircleLength;
+@property (assign, nonatomic) CGFloat titleCenterY;
 
 - (id)initWithFrame:(CGRect)theFrame padding:(UIEdgeInsets)thePadding titles:(NSArray *)theTitles;
 - (void)setHandlerColor:(UIColor *)theColor;

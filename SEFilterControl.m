@@ -38,13 +38,103 @@ NSString *const kTitlesSelectedFontKey = @"font";
 @synthesize handler = _handler;
 @synthesize padding = _padding;
 @synthesize selectedOffset = _selectedOffset;
+@synthesize backgroundImage = _backgroundImage;
+@synthesize backgroundView = _backgroundView;
+@synthesize progressBarCenterY = _progressBarCenterY;
+@synthesize progressBarHeight = _progressBarHeight;
+@synthesize progressBarSelectionCircleLength = _progressBarSelectionCircleLength;
+@synthesize titleCenterY = _titleCenterY;
 
--(CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
+- (CGPoint)getCenterPointForIndex:(NSInteger)theIndex {
     CGFloat theNormalizedIndex = (CGFloat)theIndex/(CGFloat)([self countOfTitles] - 1);
     CGFloat theWidth = CGRectGetWidth(self.bounds) - self.padding.left - self.padding.right;
-    CGFloat theHandleLength = 28.0f;
     
-    return CGPointMake(self.padding.left + (theNormalizedIndex * theWidth), CGRectGetHeight(self.bounds) - (theHandleLength / 2.0f) - 10.0f);
+    return CGPointMake(self.padding.left + (theNormalizedIndex * theWidth), self.progressBarCenterY);
+}
+
+- (UIImage *)backgroundImage {
+    if (_backgroundImage == nil) {
+        CGSize theSize = self.bounds.size;
+        UIGraphicsBeginImageContextWithOptions(theSize, NO, [[UIScreen mainScreen] scale]);
+        {
+            CGContextRef theContext = UIGraphicsGetCurrentContext();
+            
+            //Fill Main Path
+            CGContextSaveGState(theContext);
+            {
+                CGContextSetFillColorWithColor(theContext, self.progressColor.CGColor);
+                
+                CGContextFillRect(theContext, CGRectMake(self.padding.left, self.progressBarCenterY - (self.progressBarHeight * 0.5f), theSize.width - self.padding.right - self.padding.left, self.progressBarHeight));
+            }
+            CGContextRestoreGState(theContext);
+            
+            //Draw White Bottom Shadow
+            CGContextSaveGState(theContext);
+            {
+                CGContextBeginPath(theContext);
+                CGContextMoveToPoint(theContext, self.padding.left, self.progressBarCenterY + (self.progressBarHeight * 0.5f));
+                CGContextAddLineToPoint(theContext, theSize.width - self.padding.right, self.progressBarCenterY + (self.progressBarHeight * 0.5f));
+                CGContextClosePath(theContext);
+                
+                CGContextSetStrokeColorWithColor(theContext, [UIColor whiteColor].CGColor);
+                CGContextSetLineWidth(theContext, 0.5f);
+                
+                CGContextStrokePath(theContext);
+            }
+            CGContextRestoreGState(theContext);
+            
+            for (NSInteger theIndex = 0; theIndex < [self countOfTitles]; theIndex++) {
+                CGPoint theCenterPoint = [self getCenterPointForIndex:theIndex];
+                CGFloat theCirclesLength = self.progressBarSelectionCircleLength;
+                
+                // Draw Selection Circles
+                CGContextSaveGState(theContext);
+                {
+                    CGContextSetFillColorWithColor(theContext, self.progressColor.CGColor);
+                    CGContextFillEllipseInRect(theContext, CGRectMake(theCenterPoint.x - (theCirclesLength / 2.0f), theCenterPoint.y - (theCirclesLength / 2.0f), theCirclesLength, theCirclesLength));
+                }
+                CGContextRestoreGState(theContext);
+                
+                // Draw top Gradient
+                CGFloat theGradientColors[12] =
+                {
+                    0.0f, 0.0f, 0.0f, 1.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f, 0.0f
+                };
+                CGColorSpaceRef theBaseSpace = CGColorSpaceCreateDeviceRGB();
+                CGGradientRef theGradient = CGGradientCreateWithColorComponents(theBaseSpace, theGradientColors, NULL, 3);
+                CGContextSaveGState(theContext);
+                {
+                    CGContextAddEllipseInRect(theContext, CGRectMake(theCenterPoint.x - (theCirclesLength / 2.0f), theCenterPoint.y - (theCirclesLength / 2.0f), theCirclesLength, theCirclesLength));
+                    CGContextClip(theContext);
+                    CGContextDrawLinearGradient (theContext, theGradient, CGPointZero, CGPointMake(0.0f, theSize.height), 0);
+                }
+                CGContextRestoreGState(theContext);
+                
+                //Draw White Bottom Shadow
+                CGContextSaveGState(theContext);
+                {
+                    CGContextSetStrokeColorWithColor(theContext, [UIColor colorWithWhite:1.0f alpha:0.5f].CGColor);
+                    CGContextSetLineWidth(theContext, 0.5f);
+                    CGContextAddArc(theContext, theCenterPoint.x, theCenterPoint.y, (theCirclesLength / 2.0f), 24.0f * M_PI / 180.0f, 156.0f * M_PI / 180.0f, 0);
+                    CGContextDrawPath(theContext, kCGPathStroke);
+                }
+                CGContextRestoreGState(theContext);
+            }
+        }
+        _backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }
+    return _backgroundImage;
+}
+
+- (UIView *)backgroundView {
+    if (_backgroundView == nil) {
+        _backgroundView = [[UIImageView alloc] initWithImage:self.backgroundImage];
+        [self insertSubview:_backgroundView atIndex:0];
+    }
+    return _backgroundView;
 }
 
 -(CGPoint)fixFinalPoint:(CGPoint)thePoint {
@@ -80,6 +170,10 @@ NSString *const kTitlesSelectedFontKey = @"font";
         [self.handler addTarget:self action:@selector(TouchMove:withEvent:) forControlEvents: UIControlEventTouchDragOutside | UIControlEventTouchDragInside];
         [self addSubview:self.handler];
         
+        self.progressBarCenterY = CGRectGetHeight(self.bounds) - 25.0f;
+        self.progressBarHeight = 3.0f;
+        self.progressBarSelectionCircleLength = self.handler.length - (6.0f * 2.0f);
+        
         oneSlotSize = 1.f*(self.frame.size.width-self.padding.left-self.padding.right-1)/([self countOfTitles]-1);
         for (int i = 0; i < [self countOfTitles]; i++) {
             NSDictionary *theDictionary = [self objectInTitlesAtIndex:i];
@@ -114,97 +208,10 @@ NSString *const kTitlesSelectedFontKey = @"font";
     return self;
 }
 
--(void)drawRect:(CGRect)rect{
-    CGContextRef context = UIGraphicsGetCurrentContext();
+- (void)layoutSubviews {
+    [super layoutSubviews];
     
-    CGFloat theMinY = 25.0f;
-    CGFloat theHeight = 3.0f;
-    
-    //Fill Main Path
-    CGContextSaveGState(context);
-    
-    CGContextSetFillColorWithColor(context, self.progressColor.CGColor);
-    
-    CGContextFillRect(context, CGRectMake(self.padding.left, CGRectGetHeight(rect) - theMinY, CGRectGetWidth(rect) - self.padding.right - self.padding.left, 3.0f));
-    
-    CGContextRestoreGState(context);
-    
-    
-    /*
-    //Draw Black Top Shadow
-    CGContextSaveGState(context);
-    
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, self.padding.left, CGRectGetHeight(rect) - theMinY);
-    CGContextAddLineToPoint(context, CGRectGetWidth(rect) - self.padding.right, CGRectGetHeight(rect) - theMinY);
-    CGContextClosePath(context);
-    
-    CGColorRef shadowColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.9f].CGColor;
-    CGContextSetShadowWithColor(context, CGSizeMake(0.0f, 1.0f), 2.0f, shadowColor);
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.6f].CGColor);
-    CGContextSetLineWidth(context, 0.5f);
-    
-    CGContextStrokePath(context);
-    
-    CGContextRestoreGState(context);
-    */
-    
-    //Draw White Bottom Shadow
-    CGContextSaveGState(context);
-    
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, self.padding.left, CGRectGetHeight(rect) - theMinY + theHeight);
-    CGContextAddLineToPoint(context, CGRectGetWidth(rect) - self.padding.right, CGRectGetHeight(rect) - theMinY + theHeight);
-    CGContextClosePath(context);
-    
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f].CGColor);
-    CGContextSetLineWidth(context, 0.4f);
-    
-    CGContextStrokePath(context);
-    
-    CGContextRestoreGState(context);
-    
-    
-    for (int i = 0; i < [self countOfTitles]; i++) {
-        CGPoint centerPoint = [self getCenterPointForIndex:i];
-        
-        //Draw Selection Circles
-        CGFloat theSelectionCirclesLength = 16.0f;
-        CGContextSetFillColorWithColor(context, self.progressColor.CGColor);
-        CGContextFillEllipseInRect(context, CGRectMake(centerPoint.x - (theSelectionCirclesLength / 2.0f), centerPoint.y - (theSelectionCirclesLength / 2.0f), theSelectionCirclesLength, theSelectionCirclesLength));
-        
-        //Draw top Gradient
-        CGFloat colors[12] =   {0.0f, 0.0f, 0.0f, 1.0f,
-                                0.0f, 0.0f, 0.0f, 0.0f,
-                                0.0f, 0.0f, 0.0f, 0.0f};
-        CGColorSpaceRef baseSpace = CGColorSpaceCreateDeviceRGB();
-        CGGradientRef gradient = CGGradientCreateWithColorComponents(baseSpace, colors, NULL, 3);
-        
-        CGContextSaveGState(context);
-        CGContextAddEllipseInRect(context, CGRectMake(centerPoint.x - (theSelectionCirclesLength / 2.0f), centerPoint.y - (theSelectionCirclesLength / 2.0f), theSelectionCirclesLength, theSelectionCirclesLength));
-        CGContextClip(context);
-        CGContextDrawLinearGradient (context, gradient, CGPointMake(0.0f, 0.0f), CGPointMake(0.0f, CGRectGetHeight(rect)), 0);
-        CGContextRestoreGState(context);
-        
-        //Draw White Bottom Shadow
-        
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:1 green:1
-                                                                   blue:1 alpha:.4f].CGColor);
-        CGContextSetLineWidth(context, 0.8f);
-        CGContextAddArc(context, centerPoint.x, centerPoint.y, (theSelectionCirclesLength / 2.0f), 24.0f * M_PI / 180.0f, 156.0f * M_PI/180.0f, 0);
-        CGContextDrawPath(context,kCGPathStroke);
-        
-        /*
-        //Draw Black Top Shadow
-        
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0 green:0
-                                                                   blue:0 alpha:.2f].CGColor);
-        
-        CGContextAddArc(context, centerPoint.x, centerPoint.y, (theSelectionCirclesLength / 2.0f), (i == ([self countOfTitles] - 1) ? 28.0f : -20.0f) * M_PI / 180.0f, ( (i == 0) ? -208.0f : -160.0f) * M_PI / 180.0f, 1);
-        CGContextSetLineWidth(context, 1.f);
-        CGContextDrawPath(context,kCGPathStroke);
-        */
-    }
+    self.backgroundView.frame = self.bounds;
 }
 
 - (void)setHandlerColor:(UIColor *)theColor {
