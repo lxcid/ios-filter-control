@@ -202,6 +202,10 @@ static NSString *const kTitleLabelsPropertyName = @"titleLabels";
                     CGContextClip(theContext);
                     CGContextDrawLinearGradient (theContext, theGradient, CGPointZero, CGPointMake(0.0f, theSize.height), 0);
                 }
+                CGGradientRelease(theGradient);
+                theGradient = NULL;
+                CGColorSpaceRelease(theBaseSpace);
+                theBaseSpace = NULL;
                 CGContextRestoreGState(theContext);
                 
                 //Draw White Bottom Shadow
